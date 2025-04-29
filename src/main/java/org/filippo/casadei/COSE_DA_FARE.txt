@@ -1,0 +1,3 @@
+1) Gestire la logica del gioco
+2) Gestire flusso (stati o tutto nel controller)
+3) Fare view (nella view ho metodo chooseCard/playCard del player umano)
