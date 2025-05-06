@@ -1,7 +1,7 @@
 package org.filippo.casadei.model;
 
 // TODO: DECIDERE SE METTERE CAMPO BRISCOLASUIT O NO
-public class BriscolaRules {
+public class GameRules {
 
 /*
     private final Suit briscolaSuit; // seme della briscola
@@ -19,8 +19,6 @@ public class BriscolaRules {
      * @return 0 se vince il primo giocatore, 1 se vince il secondo.
      */
     public static int determineWinner(Card firstCard, Card secondCard, Suit briscolaSuit) {
-        Suit leadSuit = firstCard.getSuit();
-
         boolean firstIsBriscola = firstCard.getSuit() == briscolaSuit;
         boolean secondIsBriscola = secondCard.getSuit() == briscolaSuit;
 

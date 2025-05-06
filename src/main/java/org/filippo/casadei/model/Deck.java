@@ -12,7 +12,7 @@ public class Deck {
         this.deck = deck;
     }
 
-    // Factory method per creare un mazzo standard di 40 carte
+    // Factory method per creare un mazzo standard di 40 carte ordinate
     public static Deck createDeck() {
         Stack<Card> deck = new Stack<>();
         for (Suit suit : Suit.values()) {
@@ -20,10 +20,14 @@ public class Deck {
                 deck.push(new Card(suit, rank));
             }
         }
-        // Mescolo il mazzo
-        Collections.shuffle(deck);
 
         return new Deck(deck);
+    }
+
+    // Mescolo il mazzo
+    public Deck shuffle() {
+        Collections.shuffle(this.deck);
+        return this;
     }
 
     // Pescare una carta

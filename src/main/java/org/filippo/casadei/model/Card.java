@@ -10,6 +10,10 @@ public class Card{
         this.rank = rank;
     }
 
+    // Ritorna il nome del file .png associato alla carta
+    public String toFileName() {
+        return this.suit.getSuitName() + this.rank.getRankName();
+    }
     public Suit getSuit() {
         return this.suit;
     }

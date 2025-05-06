@@ -1,10 +1,10 @@
 package org.filippo.casadei.model;
 
 public enum Suit {
-    BATONS("Batons"),
-    COINS("Coins"),
-    CUPS("Cups"),
-    SWORDS("Swords");
+    BATONS("bastoni"),
+    COINS("denara"),
+    CUPS("coppe"),
+    SWORDS("spade");
 
     private final String suitName;
 

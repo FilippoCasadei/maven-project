@@ -14,9 +14,9 @@ public class Cpu extends Player{
     }
 
     // TODO: PER ORA NON MI INTERESSA IL CONTESTO (GIOCA CARTE A CASO)
-    public Card chooseCard() {
+    public Card chooseCard(BriscolaGame game) {
         // Usa la strategia configurata per selezionare una carta
-        return strategy.chooseCard(this);
+        return strategy.chooseCard(this, game);
     }
 
 }

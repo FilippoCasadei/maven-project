@@ -6,11 +6,11 @@ public enum Rank {
     FIVE("5", 0),
     SIX("6", 0),
     SEVEN("7", 0),
-    KNAVE("Knave", 2),
-    KNIGHT("Knight", 3),
-    KING("King", 4),
+    KNAVE("8", 2),
+    KNIGHT("9", 3),
+    KING("10", 4),
     THREE("3", 10),
-    ACE("Ace", 11);
+    ACE("1", 11);
 
     private String rankName;
     private int rankPoints;

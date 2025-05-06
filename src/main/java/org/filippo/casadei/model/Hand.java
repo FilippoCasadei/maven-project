@@ -10,6 +10,7 @@ import java.util.List;
 public class Hand {
 
     private final List<Card> hand;
+    public static final int MAX_CARDS_IN_HAND = 3;
 
     /**
      * Initializes an empty hand.
@@ -24,8 +25,8 @@ public class Hand {
      * @param card the card to be added
      */
     public void addCard(Card card) {
-        // verifico che le carte in mano siano esattamente 2 prima di pescare una carta
-        if (hand.size() != 2) {
+        // Verifico che le carte in mano non siano mai più di 2 prima di pescare una carta
+        if (hand.size() >= MAX_CARDS_IN_HAND) {
             throw new IllegalStateException("Hand contains "+ hand.size() +" cards");
         }
 
@@ -46,6 +47,10 @@ public class Hand {
         hand.remove(card);
     }
 
+    public boolean isEmpty() {
+        return hand.isEmpty();
+    }
+
     public List<Card> getCards() {
         return Collections.unmodifiableList(hand);
     }
@@ -63,4 +68,5 @@ public class Hand {
         sb.append("]");
         return sb.toString();
     }
+
 }
