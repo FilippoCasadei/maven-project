@@ -1,4 +1,4 @@
-package org.filippo.casadei.model;
+package it.filippo.casadei.model;
 
 // TODO: DECIDERE SE METTERE CAMPO BRISCOLASUIT O NO
 public class GameRules {

@@ -1,4 +1,4 @@
-package org.filippo.casadei.model;
+package it.filippo.casadei.model;
 
 public class Cpu extends Player{
 

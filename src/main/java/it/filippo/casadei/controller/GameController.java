@@ -1,7 +1,9 @@
-package org.filippo.casadei.controller;
+package it.filippo.casadei.controller;
 
-import org.filippo.casadei.model.*;
-import org.filippo.casadei.view.*;
+import it.filippo.casadei.model.*;
+import it.filippo.casadei.view.GameView;
+import it.filippo.casadei.view.GuiGameView;
+
 
 import java.util.*;
 
@@ -17,28 +19,28 @@ public class GameController {
     private final Player player2;
     private final Card briscolaCard;
     private final Suit briscolaSuit;
-    private Player currentFirstPlayer;
+    //private Player currentFirstPlayer;
     private boolean isBriscolaDrawn = false;
 
     public GameController(GameView view, Player player1, Player player2) {
         this.view = view;
         this.player1 = player1;
         this.player2 = player2;
-        Deck deck = Deck.createDeck();
-        Table table = new Table();
-        this.model = new BriscolaGame(player1, player2, Deck.createDeck(), table);
+        this.model = new BriscolaGame(player1, player2, Deck.createDeck(), new Table());
 
         // Mescola e distribuisce inizialmente 3 carte a ciascun giocatore
         setupGame();
 
         // Determina la briscola estraendo la prossima carta dal mazzo
-        this.briscolaCard = deck.draw();
+        this.briscolaCard = model.getDeck().draw();
         this.briscolaSuit = briscolaCard.getSuit();
         model.setBriscola(briscolaCard);
         view.showBriscola(briscolaCard);
 
-        this.currentFirstPlayer = player1; // Imposta player1 come primo iniziale
+        // Imposta come ordine iniziale prima player1 e poi player2 TODO: posso eliminare il campo e usare solamente il campo di Table settandolo inizialmente come player1 e second come player2
+        model.getTable().setPlayersOrder(player1, player2);
 
+        // Sceglie quale view utilizzare in base all'istanza in runtime dell'interfaccia view
         if (view instanceof GuiGameView gui) {
             gui.start(this);
         } else {
@@ -66,51 +68,64 @@ public class GameController {
     }
 
     private void playTurn() {
-        Player second = model.getOpponent(currentFirstPlayer);
+        Table table = model.getTable();
+        Player firstPlayer = table.getFirstPlayer();
+        Player secondPlayer = table.getSecondPlayer();
 
-        Card card1 = (currentFirstPlayer instanceof Cpu)
-                ? ((Cpu) currentFirstPlayer).chooseCard(model)
-                : view.requestCard(currentFirstPlayer);
+        // Primo giocatore sceglie la carta
+        Card card1 = (firstPlayer instanceof Cpu)
+                ? ((Cpu) firstPlayer).chooseCard(model)
+                : view.requestCard(firstPlayer);
 
-        Card card2 = (second instanceof Cpu)
-                ? ((Cpu) second).chooseCard(model)
-                : view.requestCard(second);
-
-        currentFirstPlayer.playCard(card1);
-        second.playCard(card2);
+        // Primo giocatore gioca la carta e aggiorna il model e la view
+        firstPlayer.playCard(card1);
         model.registerPlayedCard(card1);
-        model.registerPlayedCard(card2);
-        model.getTable().playCard(currentFirstPlayer, card1);
-        model.getTable().playCard(second, card2);
+        table.playCard(firstPlayer, card1);
+        view.showPlayedCard(firstPlayer, card1);
 
-        view.showPlayedCard(currentFirstPlayer, card1);
-        view.showPlayedCard(second, card2);
+        // Secondo giocatore sceglie la carta
+        Card card2 = (secondPlayer instanceof Cpu)
+                ? ((Cpu) secondPlayer).chooseCard(model)
+                : view.requestCard(secondPlayer);
+
+        // Secondo giocatore gioca la carta e aggiorna il model e la view
+        secondPlayer.playCard(card2);
+        model.registerPlayedCard(card2);
+        table.playCard(secondPlayer, card2);
+        view.showPlayedCard(secondPlayer, card2);
     }
 
     private void evaluateHand() {
         Table table = model.getTable();
+        Player firstPlayer = table.getFirstPlayer();
+        Player secondPlayer = table.getSecondPlayer();
 
         // Prende la prima e seconda carta giocata
-        Card first = table.getCardPlayedBy(currentFirstPlayer);
-        Player second = model.getOpponent(currentFirstPlayer);
-        Card secondCard = table.getCardPlayedBy(second);
+        Card firstCard = table.getCardPlayedBy(firstPlayer);
+        Card secondCard = table.getCardPlayedBy(secondPlayer);
 
         // Determina il vincitore della mano di gioco
-        int winIdx = GameRules.determineWinner(first, secondCard, briscolaSuit);
-        Player winner = (winIdx == 0) ? currentFirstPlayer : second;
+        int winIdx = GameRules.determineWinner(firstCard, secondCard, briscolaSuit);
+        Player winner = (winIdx == 0) ? firstPlayer : secondPlayer;
 
         // Aggiunge i punti al giocatore che ha vinto la mano di gioco
-        int points = GameRules.calculatePointsWon(first, secondCard);
+        int points = GameRules.calculatePointsWon(firstCard, secondCard);
         winner.addPoints(points);
 
-        // Il vincitore gioca per primo il turno successivo
-        currentFirstPlayer = winner;
+        // Il vincitore gioca per primo il turno successivo e il perdente per secondo
+        table.setPlayersOrder(winner, model.getOpponent(winner));
+
+        // Aggiorna la view
         view.showHandResult(table.getPlayOrder(), winner, points);
     }
 
     private void drawCards() {
         Deck deck = model.getDeck();
-        Player[] order = {currentFirstPlayer, model.getOpponent(currentFirstPlayer)};
+        Table table = model.getTable();
+        Player firstPlayer = table.getFirstPlayer();
+        Player secondPlayer = table.getSecondPlayer();
+
+        Player[] order = {firstPlayer, secondPlayer};
 
         for (Player p : order) {
             if (!deck.isEmpty()) {

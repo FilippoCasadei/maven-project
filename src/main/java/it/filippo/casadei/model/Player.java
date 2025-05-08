@@ -1,6 +1,4 @@
-package org.filippo.casadei.model;
-
-import java.util.Collections;
+package it.filippo.casadei.model;
 
 public abstract class Player {
     // TODO: SERVE IL NOME???
@@ -18,12 +16,17 @@ public abstract class Player {
         hand.addCard(card);
     }
 
-    /**
-     * TODO: Gioca una carta: rimuove una carta dalla mano
-     * // TODO: PER ORA NON MI INTERESSA IL CONTESTO COME PARAMETRO (GIOCA CARTE A CASO)
-     */
     public void playCard(Card card) {
         hand.removeCard(card);
+    }
+
+    public void addPoints(int pointsToAdd) {
+        this.points += pointsToAdd;
+    }
+
+    // === GETTER ===
+    public String getName() {
+        return name;
     }
 
     public Hand getHand() {
@@ -32,9 +35,5 @@ public abstract class Player {
 
     public int getPoints() {
         return points;
-    }
-
-    public void addPoints(int pointsToAdd) {
-        this.points += pointsToAdd;
     }
 }

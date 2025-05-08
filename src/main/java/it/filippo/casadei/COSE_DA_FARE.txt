@@ -1,0 +1,6 @@
+3) Sistemare la GUI
+4) Gestire difficoltà e contesto da cui traggono informazioni
+5) Gestire le scelte:
+    - Difficoltà CPU
+    - View da utilizzare
+6) Come faccio il costruttore del controller? Ha senso mettere i metodi del controller nel model (BriscolaGame)

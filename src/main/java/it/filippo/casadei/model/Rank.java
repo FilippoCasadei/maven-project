@@ -1,4 +1,4 @@
-package org.filippo.casadei.model;
+package it.filippo.casadei.model;
 
 public enum Rank {
     TWO("2", 0),
@@ -12,8 +12,8 @@ public enum Rank {
     THREE("3", 10),
     ACE("1", 11);
 
-    private String rankName;
-    private int rankPoints;
+    private final String rankName;
+    private final int rankPoints;
 
     private Rank(String rankName, int rankPoints) {
         this.rankName = rankName;

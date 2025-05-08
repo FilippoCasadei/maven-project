@@ -1,4 +1,4 @@
-package org.filippo.casadei.model;
+package it.filippo.casadei.model;
 
 import java.util.Collections;
 import java.util.List;

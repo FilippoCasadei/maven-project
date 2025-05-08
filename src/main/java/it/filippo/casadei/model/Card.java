@@ -1,4 +1,4 @@
-package org.filippo.casadei.model;
+package it.filippo.casadei.model;
 
 public class Card{
 
@@ -14,6 +14,11 @@ public class Card{
     public String toFileName() {
         return this.suit.getSuitName() + this.rank.getRankName();
     }
+
+    public int getPoints() {
+        return this.rank.getCardPoints();
+    }
+
     public Suit getSuit() {
         return this.suit;
     }
