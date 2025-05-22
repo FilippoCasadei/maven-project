@@ -1,5 +1,6 @@
 package it.filippo.casadei.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
@@ -7,6 +8,7 @@ import java.util.Stack;
 public class Deck {
     private final Stack<Card> deck;
 
+    // TODO: MEGLIO UTILIZZARE UN COSTRUTTORE NORMALE E UN METODO PER POPOLARE IL DECK?
     // Costruttore privato per utilizzare il Factory Pattern
     private Deck(Stack<Card> deck) {
         this.deck = deck;
@@ -25,9 +27,8 @@ public class Deck {
     }
 
     // Mescolo il mazzo
-    public Deck shuffle() {
+    public void shuffle() {
         Collections.shuffle(this.deck);
-        return this;
     }
 
     // Pescare una carta
@@ -35,11 +36,6 @@ public class Deck {
         return deck.isEmpty() ? null :
                                 deck.pop();
     }
-//    TODO: Scegliere tra Optional e non Optional
-//    public Optional<Card> draw() {
-//        return deck.isEmpty() ? Optional.empty() :
-//    							  Optional.of(deck.pop());
-//    }
 
     // Dimensione del deck
     public int size() {
@@ -50,7 +46,17 @@ public class Deck {
         return deck.isEmpty();
     }
 
-    // Rappresentazione immutabile delle carte rimaste nel deck
+    // == GETTEER ==
+    public List<Card> getAllCards() {
+        List<Card> allCards = new ArrayList<>();
+        for (Suit suit : Suit.values()) {
+            for (Rank rank : Rank.values()) {
+                allCards.add(new Card(suit, rank));
+            }
+        }
+        return allCards;
+    }
+
     public List<Card> getCards() {
         return Collections.unmodifiableList(deck);
     }

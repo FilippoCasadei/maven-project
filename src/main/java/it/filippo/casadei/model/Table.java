@@ -4,15 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-// TODO: DA MODIFICARE
 public class Table {
     private Player firstPlayer;
     private Card firstCard;
     private Player secondPlayer;
     private Card secondCard;
 
-    // TODO: PROBLEMA, firstPlayer e secondPlayer dovrebbero essere settati alla fine del turno precedente perchè già si conoscono
-    // TODO: Quindi i Player sono sempre presenti e mai nulli, mentre le carte sono null finchè non vengono giocate
+    // NOTA: I Player sono sempre presenti e mai nulli, mentre le carte sono null finchè non vengono giocate
     public void playCard(Player player, Card card) {
         if (player.equals(firstPlayer)) {
             firstCard = card;
@@ -41,6 +39,10 @@ public class Table {
         else {
             throw new IllegalArgumentException("Il giocatore " + player + " non ha giocato una carta.");
         }
+    }
+
+    public boolean bothPlayed() {
+        return firstCard != null && secondCard != null;
     }
 
     // TODO: Non penso serva

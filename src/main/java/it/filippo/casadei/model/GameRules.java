@@ -3,13 +3,6 @@ package it.filippo.casadei.model;
 // TODO: DECIDERE SE METTERE CAMPO BRISCOLASUIT O NO
 public class GameRules {
 
-/*
-    private final Suit briscolaSuit; // seme della briscola
-
-    public BriscolaRules(Suit briscolaSuit) {
-        this.briscolaSuit = briscolaSuit;
-    }
-*/
     /**
      * Determina quale carta vince la mano.
      *
@@ -18,7 +11,7 @@ public class GameRules {
      * @param briscolaSuit Seme della briscola.
      * @return 0 se vince il primo giocatore, 1 se vince il secondo.
      */
-    public static int determineWinner(Card firstCard, Card secondCard, Suit briscolaSuit) {
+    public static int compareCards(Card firstCard, Card secondCard, Suit briscolaSuit) {
         boolean firstIsBriscola = firstCard.getSuit() == briscolaSuit;
         boolean secondIsBriscola = secondCard.getSuit() == briscolaSuit;
 
@@ -34,7 +27,7 @@ public class GameRules {
         else if (firstCard.getSuit() == secondCard.getSuit()) {
             return firstCard.getRank().ordinal() > secondCard.getRank().ordinal() ? 0 : 1;
         }
-        // Seme è diverso e nessuno è briscola -> vinche primo
+        // Seme è diverso e nessuno è briscola -> vince primo
         else {
             return 0;
         }

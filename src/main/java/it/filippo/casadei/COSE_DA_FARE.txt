@@ -1,5 +1,7 @@
-3) Sistemare la GUI
-4) Gestire difficoltà e contesto da cui traggono informazioni
+1) Fare metodo chooseCard() di HardStrategy
+2) Seguire modo con observer di prof per la view (l'observer è l'interfaccia del controller)
+3) Dare nomi significativi come fa prof
+4) Mettere commenti docstring
 5) Gestire le scelte:
     - Difficoltà CPU
     - View da utilizzare

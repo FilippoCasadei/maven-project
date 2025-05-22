@@ -7,7 +7,7 @@ public class MediumStrategy implements CpuStrategy {
     private static final int HIGH_POINTS = 10;
 
     // == STILE DI GIOCO ==
-    // TODO: Aggiugni note su stile di gioco
+    // TODO: Aggiungi note su stile di gioco
 
     @Override
     public Card chooseCard(Cpu cpu, BriscolaGame game) {
@@ -32,14 +32,15 @@ public class MediumStrategy implements CpuStrategy {
                 // Gioca la carta dello stesso seme più alta
                 chosen = hand.getCards().stream()
                         .filter(card -> card.getSuit().equals(cardOnTable.getSuit()))
+                        .filter(c -> c.getRank().ordinal() > cardOnTable.getRank().ordinal())
                         .max(Comparator.comparingInt(Card::getPoints));
 
                 // Se non ne ho osserva il valore della carta sul tavolo
                 if (chosen.isEmpty()) {
 
-                    // Se la carta sul tavolo non è un carico gioca la carta più bassa non di briscola
+                    // Se la carta sul tavolo non è un carico gioca la carta dal valore più basso
                     if (cardOnTable.getPoints() < HIGH_POINTS) {
-                        chosen = getLowestPointBriscola(hand, briscolaSuit);
+                        chosen = getLessValuableCard(hand, briscolaSuit);
                     }
 
                     // Se la carta sul tavolo è un carico
@@ -48,7 +49,9 @@ public class MediumStrategy implements CpuStrategy {
                         chosen = getLowestPointBriscola(hand, briscolaSuit);
 
                         // Se non ne ho gioca la carta più bassa
-                        chosen = getLowestPointNotBriscola(hand, briscolaSuit);
+                        if (chosen.isEmpty()) {
+                            chosen = getLowestPointNotBriscola(hand, briscolaSuit);
+                        }
                     }
                 }
             }

@@ -9,13 +9,13 @@ public class Cpu extends Player{
         this.strategy = strategy;
     }
 
+    // TODO: DEVO UTILIZZARE QUESTO METODO NEL CONTROLLER/MAIN
     public void setStrategy(CpuStrategy strategy) {
         this.strategy = strategy;
     }
 
-    // TODO: PER ORA NON MI INTERESSA IL CONTESTO (GIOCA CARTE A CASO)
+    // Sceglie la carta in base alla difficoltà (strategy) impostata
     public Card chooseCard(BriscolaGame game) {
-        // Usa la strategia configurata per selezionare una carta
         return strategy.chooseCard(this, game);
     }
 
