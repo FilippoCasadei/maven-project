@@ -9,6 +9,10 @@ public class Cpu extends Player{
         this.strategy = strategy;
     }
 
+    public CpuStrategy getStrategy() {
+        return strategy;
+    }
+
     // TODO: DEVO UTILIZZARE QUESTO METODO NEL CONTROLLER/MAIN
     public void setStrategy(CpuStrategy strategy) {
         this.strategy = strategy;
@@ -18,5 +22,4 @@ public class Cpu extends Player{
     public Card chooseCard(BriscolaGame game) {
         return strategy.chooseCard(this, game);
     }
-
 }

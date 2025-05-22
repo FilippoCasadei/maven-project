@@ -20,10 +20,6 @@ public class BriscolaController implements BriscolaViewObserver {
     private final BriscolaView view;
     private final Player player1;
     private final Player player2;
-    private final Card briscolaCard;
-    private final Suit briscolaSuit;
-    //private Player currentFirstPlayer;
-    private boolean isBriscolaDrawn = false;
 
     public BriscolaController(BriscolaView view, Player player1, Player player2) {
         this.view = view;
@@ -31,122 +27,61 @@ public class BriscolaController implements BriscolaViewObserver {
         this.player2 = player2;
         this.model = new BriscolaGame(player1, player2, Deck.createDeck(), new Table());
 
-        // Mescola e distribuisce inizialmente 3 carte a ciascun giocatore
-        setupGame();
-
-        // Determina la briscola estraendo la prossima carta dal mazzo
-        this.briscolaCard = model.getDeck().draw();
-        this.briscolaSuit = briscolaCard.getSuit();
-        model.setBriscola(briscolaCard);
-        view.showBriscola(briscolaCard);
-
-        // Imposta come ordine iniziale prima player1 e poi player2 TODO: posso eliminare il campo e usare solamente il campo di Table settandolo inizialmente come player1 e second come player2
-        model.getTable().setPlayersOrder(player1, player2);
-
         // Sceglie quale view utilizzare in base all'istanza in runtime dell'interfaccia view
-        if (view instanceof GuiBriscolaViewImpl gui) {
-            gui.start(this);
-        } else {
-            startGame();
-        }
+        view.start(this);  //TODO: decidere se usare o no observer
     }
 
-    private void setupGame() {
-        Deck deck = model.getDeck();
-        deck.shuffle();
-        for (int i = 0; i < Hand.MAX_CARDS_IN_HAND; i++) {
-            player1.addCardToHand(deck.draw());
-            player2.addCardToHand(deck.draw());
-        }
-    }
-
+    /** Gestisce tutta la sessione di gioco */
     public void startGame() {
-        while (!isGameOver()) {
+        do {
+            playSingleGame();
+        } while (view.askPlayAgain());
+    }
+
+    /** Gestisce una singola partita */
+    public void playSingleGame() {
+        // TODO: AGGIUNGERE model.initialize() che inizializza il deck e il table per la nuova partita (forse basta solo il deck)
+        model.setupGame();
+        view.showSetup(model.getBriscola(), player1, player2);
+        view.showBriscola(model.getBriscola());
+        while (!model.isGameOver()) {
             playTurn();
-            evaluateHand();
-            drawCards();
-            model.getTable().clear();
         }
         endGame();
     }
 
+    private void playCard(Player player) {
+        // Giocatore sceglie la carta (il modo dipende se è Cpu o umano)
+        Card card = (player instanceof Cpu)
+                ? ((Cpu) player).chooseCard(model)
+                : view.requestCard(player);
+        // Giocatore gioca la carta e aggiorna il model e la view
+        player.playCard(card);
+        model.playCard(player, card);
+        view.showPlayedCard(player, card);
+
+    }
     private void playTurn() {
         Table table = model.getTable();
-        Player firstPlayer = table.getFirstPlayer();
-        Player secondPlayer = table.getSecondPlayer();
-
-        // Primo giocatore sceglie la carta
-        Card card1 = (firstPlayer instanceof Cpu)
-                ? ((Cpu) firstPlayer).chooseCard(model)
-                : view.requestCard(firstPlayer);
 
         // Primo giocatore gioca la carta e aggiorna il model e la view
-        firstPlayer.playCard(card1);
-        model.registerPlayedCard(card1);
-        table.playCard(firstPlayer, card1);
-        view.showPlayedCard(firstPlayer, card1);
-
-        // Secondo giocatore sceglie la carta
-        Card card2 = (secondPlayer instanceof Cpu)
-                ? ((Cpu) secondPlayer).chooseCard(model)
-                : view.requestCard(secondPlayer);
-
+        playCard(table.getFirstPlayer());
+        // TODO: eventuale metodo per aggiornare view (le carte in mano alla mano del giocatore cambiano)
         // Secondo giocatore gioca la carta e aggiorna il model e la view
-        secondPlayer.playCard(card2);
-        model.registerPlayedCard(card2);
-        table.playCard(secondPlayer, card2);
-        view.showPlayedCard(secondPlayer, card2);
-    }
+        playCard(table.getSecondPlayer());
+        // TODO: eventuale metodo per aggiornare view
 
-    private void evaluateHand() {
-        Table table = model.getTable();
-        Player firstPlayer = table.getFirstPlayer();
-        Player secondPlayer = table.getSecondPlayer();
+        // Si valuta la mano di gioco
+        model.evaluateHand();
+        view.showHandResult(table.getPlayOrder(), table.getWinner(), table.getPointsWon());
+        table.clear();
 
-        // Prende la prima e seconda carta giocata
-        Card firstCard = table.getCardPlayedBy(firstPlayer);
-        Card secondCard = table.getCardPlayedBy(secondPlayer);
-
-        // Determina il vincitore della mano di gioco
-        int winIdx = GameRules.compareCards(firstCard, secondCard, briscolaSuit);
-        Player winner = (winIdx == 0) ? firstPlayer : secondPlayer;
-
-        // Aggiunge i punti al giocatore che ha vinto la mano di gioco
-        int points = GameRules.calculatePointsWon(firstCard, secondCard);
-        winner.addPoints(points);
-
-        // Il vincitore gioca per primo il turno successivo e il perdente per secondo
-        table.setPlayersOrder(winner, model.getOpponent(winner));
-
-        // Aggiorna la view
-        view.showHandResult(table.getPlayOrder(), winner, points);
-    }
-
-    private void drawCards() {
-        Deck deck = model.getDeck();
-        Table table = model.getTable();
-        Player firstPlayer = table.getFirstPlayer();
-        Player secondPlayer = table.getSecondPlayer();
-
-        Player[] order = {firstPlayer, secondPlayer};
-
-        for (Player p : order) {
-            if (!deck.isEmpty()) {
-                Card drawn = deck.draw();
-                p.addCardToHand(drawn);
-                view.showDraw(p, drawn);
-            } else if (!isBriscolaDrawn) {
-                isBriscolaDrawn = true;
-                p.addCardToHand(briscolaCard);
-                view.showDraw(p, briscolaCard);
-            }
-        }
-    }
-
-    private boolean isGameOver() {
-        return model.getDeck().isEmpty()
-                && player1.getHand().isEmpty()
-                && player2.getHand().isEmpty();
+        // Primo giocatore della mano successiva pesca una carta
+        model.drawCard(table.getFirstPlayer())
+                .ifPresent(c -> view.showDraw(table.getFirstPlayer(), c));
+        // Secondo giocatore della mano successiva pesca una carta
+        model.drawCard(table.getFirstPlayer())
+                .ifPresent(c -> view.showDraw(table.getSecondPlayer(), c));
     }
 
     private void endGame() {
@@ -155,8 +90,8 @@ public class BriscolaController implements BriscolaViewObserver {
         scores.put(player2, player2.getPoints());
 
         view.showFinalScores(scores);
-        Player champion = (player1.getPoints() > player2.getPoints()) ? player1 : player2;
-        view.showWinner(champion);
+        Player winner = (player1.getPoints() > player2.getPoints()) ? player1 : player2;
+        view.showWinner(winner);
     }
 
     /**

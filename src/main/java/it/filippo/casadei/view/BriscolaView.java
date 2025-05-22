@@ -1,6 +1,8 @@
 package it.filippo.casadei.view;
 
+import it.filippo.casadei.controller.BriscolaController;
 import it.filippo.casadei.model.Card;
+import it.filippo.casadei.model.Cpu;
 import it.filippo.casadei.model.Player;
 
 import java.util.List;
@@ -8,6 +10,14 @@ import java.util.Map;
 
 
 public interface BriscolaView {
+    /** Fa partire la partita. */
+    void start(BriscolaController controller);
+
+    void showSetup(Card briscolaCard, Player human, Player cpu);
+
+    /** Sceglie la difficoltà della CPU. */
+    void chooseCpuDifficulty(Cpu cpu);
+
     /** Mostra la carta di briscola estratta all'inizio. */
     void showBriscola(Card briscolaCard);
 
@@ -27,5 +37,7 @@ public interface BriscolaView {
     void showFinalScores(Map<Player, Integer> scores);
 
     /** Mostra il vincitore della partita. */
-    void showWinner(Player champion);
+    void showWinner(Player winner);
+
+    boolean askPlayAgain();
 }

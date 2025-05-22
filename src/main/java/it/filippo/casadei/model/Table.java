@@ -9,14 +9,16 @@ public class Table {
     private Card firstCard;
     private Player secondPlayer;
     private Card secondCard;
+    private Player winner;
+    private int pointsWon;
 
     // NOTA: I Player sono sempre presenti e mai nulli, mentre le carte sono null finchè non vengono giocate
     public void playCard(Player player, Card card) {
         if (player.equals(firstPlayer)) {
-            firstCard = card;
+            this.firstCard = card;
         }
         else if (player.equals(secondPlayer)) {
-            secondCard = card;
+            this.secondCard = card;
         }
         else {
             throw new IllegalStateException("Sono già state giocate due carte.");
@@ -25,8 +27,10 @@ public class Table {
 
     // Elimina le carte giocate del turno precedente
     public void clear() {
-        firstCard = null;
-        secondCard = null;
+        this.firstCard = null;
+        this.secondCard = null;
+        this.winner = null;
+        this.pointsWon = -1;
     }
 
     public Card getCardPlayedBy(Player player) {
@@ -70,10 +74,26 @@ public class Table {
         return secondCard;
     }
 
+    public int getPointsWon() {
+        return this.pointsWon;
+    }
+
+    public Player getWinner() {
+        return this.winner;
+    }
+
     // == SETTER ==
     public void setPlayersOrder(Player firstPlayer, Player secondPlayer) {
         this.firstPlayer = firstPlayer;
         this.secondPlayer = secondPlayer;
+    }
+
+    public void setPointsWon(int pointsWon) {
+        this.pointsWon = pointsWon;
+    }
+
+    public void setWinner(Player winner) {
+        this.winner = winner;
     }
 }
 

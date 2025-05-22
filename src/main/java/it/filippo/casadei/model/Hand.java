@@ -27,7 +27,7 @@ public class Hand {
     public void addCard(Card card) {
         // Verifico che le carte in mano non siano mai più di 2 prima di pescare una carta
         if (hand.size() >= MAX_CARDS_IN_HAND) {
-            throw new IllegalStateException("Hand contains "+ hand.size() +" cards");
+            throw new IllegalStateException("Il giocatore ha già "+ hand.size() +" carte in mano. Impossibile aggiungere una nuova carta.");
         }
 
         hand.add(card);
