@@ -1,0 +1,216 @@
+package org.filippo.casadei.view;
+
+import model.it.filippo.casadei.Card;
+import model.it.filippo.casadei.Player;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.Map;
+
+public class GuiGameView extends JFrame implements GameView {
+    private final JPanel opponentPanel;
+    private final JPanel playerPanel;
+    private final JPanel tablePanel;
+    private final ScaledLabel deckLabel;
+    private final ScaledLabel briscolaLabel;
+    private Card selectedCard;
+
+    public GuiGameView() {
+        setTitle("Briscola");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(900, 600);
+        setLocationRelativeTo(null);
+
+        // pannello di sfondo
+        BackgroundPanel bg = new BackgroundPanel("/background.png");
+        bg.setLayout(new BorderLayout());
+        setContentPane(bg);
+
+        // West: mazzo e briscola
+        JPanel sidePanel = new JPanel();
+        sidePanel.setOpaque(false);
+        sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
+        sidePanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        deckLabel = new ScaledLabel(getImage("/cards/back.png"));
+        deckLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        sidePanel.add(deckLabel);
+        sidePanel.add(Box.createVerticalStrut(20));
+
+        briscolaLabel = new ScaledLabel(null);
+        briscolaLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        sidePanel.add(briscolaLabel);
+
+        bg.add(sidePanel, BorderLayout.WEST);
+
+        // Centro: tavolo
+        tablePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        tablePanel.setOpaque(false);
+        bg.add(tablePanel, BorderLayout.CENTER);
+
+        // Nord: mano avversario
+        opponentPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        opponentPanel.setOpaque(false);
+        opponentPanel.setPreferredSize(new Dimension(0, 120));
+        bg.add(opponentPanel, BorderLayout.NORTH);
+
+        // Sud: mano giocatore
+        playerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        playerPanel.setOpaque(false);
+        playerPanel.setPreferredSize(new Dimension(0, 160));
+        bg.add(playerPanel, BorderLayout.SOUTH);
+
+        // Listener per ridimensionamento
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                rescaleAll();
+            }
+        });
+
+        // Mostra la finestra dopo aver aggiunto tutti i componenti
+        setVisible(true);
+        // Inizializza dimensioni componenti
+        rescaleAll();
+    }
+
+    @Override
+    public void showBriscola(Card briscolaCard) {
+        briscolaLabel.setImage(getImage("/cards/" + briscolaCard.toFileName()));
+        briscolaLabel.repaint();
+    }
+
+    @Override
+    public Card requestCard(Player p) {
+        selectedCard = null;
+        // aggiorna mano avversario
+        opponentPanel.removeAll();
+        int count = p.getHand().getCards().size();
+        for (int i = 0; i < count; i++) {
+            opponentPanel.add(new ScaledLabel(getImage("/cards/back.png")));
+        }
+        opponentPanel.revalidate(); opponentPanel.repaint();
+
+        // aggiorna mano giocatore
+        playerPanel.removeAll();
+        for (Card c : p.getHand().getCards()) {
+            CardButton btn = new CardButton(getImage("/cards/" + c.toFileName()), e -> {
+                selectedCard = c;
+                synchronized (GuiGameView2.this) { GuiGameView2.this.notify(); }
+            });
+            playerPanel.add(btn);
+        }
+        playerPanel.revalidate(); playerPanel.repaint();
+
+        synchronized (this) {
+            while (selectedCard == null) {
+                try { wait(); } catch (InterruptedException ignored) {}
+            }
+        }
+        return selectedCard;
+    }
+
+    @Override
+    public void showHandResult(List<Map.Entry<Player, Card>> order, Player winner, int points) {
+        tablePanel.removeAll();
+        for (Map.Entry<Player, Card> e : order) {
+            tablePanel.add(new ScaledLabel(getImage("/cards/" + e.getValue().toFileName())));
+        }
+        tablePanel.revalidate(); tablePanel.repaint();
+    }
+
+    @Override
+    public void showDraw(Player p, Card drawnCard) {
+        deckLabel.setImage(getImage("/cards/back.png"));
+        deckLabel.repaint();
+    }
+
+    @Override
+    public void showFinalScores(Map<Player, Integer> scores) {
+        StringBuilder sb = new StringBuilder("Punteggi Finali:\n");
+        scores.forEach((pl, pts) -> sb.append(pl.getName()).append(": ").append(pts).append("\n"));
+        JOptionPane.showMessageDialog(this, sb.toString(), "Fine Partita", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    @Override
+    public void showWinner(Player champion) {
+        String msg = (champion != null) ? champion.getName() + " ha vinto!" : "Pareggio!";
+        JOptionPane.showMessageDialog(this, msg, "Vincitore", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void rescaleAll() {
+        deckLabel.resizeIcon();
+        briscolaLabel.resizeIcon();
+        for (Component c : opponentPanel.getComponents()) if (c instanceof ScaledLabel) ((ScaledLabel)c).resizeIcon();
+        for (Component c : playerPanel.getComponents()) if (c instanceof ScaledLabel) ((ScaledLabel)c).resizeIcon();
+        for (Component c : tablePanel.getComponents()) if (c instanceof ScaledLabel) ((ScaledLabel)c).resizeIcon();
+    }
+
+    private Image getImage(String path) {
+        return new ImageIcon(getClass().getResource(path)).getImage();
+    }
+
+    /** Pulsante con immagine ridimensionata dinamicamente */
+    private static class CardButton extends JButton {
+        private final Image original;
+        public CardButton(Image img, ActionListener l) {
+            this.original = img;
+            addActionListener(l);
+            setBorder(BorderFactory.createEmptyBorder());
+            setContentAreaFilled(false);
+        }
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(original.getWidth(null), original.getHeight(null));
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            int w = getWidth();
+            int h = getHeight();
+            Image scaled = original.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+            g.drawImage(scaled, 0, 0, this);
+        }
+    }
+
+    /** Label con immagine ridimensionata dinamicamente */
+    private static class ScaledLabel extends JLabel {
+        private Image original;
+        public ScaledLabel(Image img) { this.original = img; }
+        public void setImage(Image img) { this.original = img; }
+        public void resizeIcon() { revalidate(); repaint(); }
+        @Override
+        public Dimension getPreferredSize() {
+            if (original != null) {
+                return new Dimension(original.getWidth(null), original.getHeight(null));
+            }
+            return super.getPreferredSize();
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (original != null) {
+                int w = getWidth();
+                int h = getHeight();
+                Image scaled = original.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+                g.drawImage(scaled, 0, 0, this);
+            }
+        }
+    }
+
+    /** Pannello con background caricato da risorsa. */
+    private static class BackgroundPanel extends JPanel {
+        private final Image background;
+        public BackgroundPanel(String resourcePath) {
+            this.background = new ImageIcon(getClass().getResource(resourcePath)).getImage();
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+        }
+    }
+}
