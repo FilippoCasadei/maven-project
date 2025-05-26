@@ -9,11 +9,29 @@ import java.util.*;
  * Implementa una logica avanzata per scegliere la carta più adatta
  * sia quando la CPU gioca per prima che per seconda.
  *</p>
+ *
+ * <p>
+ * La strategia "Hard" implementa uno stile di gioco avanzato che:
+ * - Mantiene in memoria tutte le carte giocate, specialmente i carichi (Assi e Tre)
+ * - Come primo giocatore:
+ *   > Gioca carte alte in semi "sicuri" dove sono già usciti i carichi
+ *   > Conserva le briscole per catturare punti importanti
+ *   > Usa i carichi strategicamente in base alle carte già viste
+ *   > Evita di giocare il Tre di briscola se l'Asso è ancora in gioco
+ * - Come secondo giocatore:
+ *   > Cerca di vincere immediatamente se può superare 60 punti
+ *   > Prova a vincere la mano con carte dello stesso seme
+ *   > Usa briscole solo per prendere carte di valore
+ *   > Nell'ultima pescata valuta se perdere per ottenere la briscola
+ *   > In situazioni critiche tenta di bloccare la vittoria dell'avversario
+ * </p>
  */
 public class HardDifficulty implements CpuDifficulty {
 
     // TODO: potrei utilizzare getMyPoints() e getOpponentPoints() dalla memoria invece che dai giocatori
     private final Memory memory = new Memory();
+    
+    
 
     // == METODI PUBBLICI ==
     /**

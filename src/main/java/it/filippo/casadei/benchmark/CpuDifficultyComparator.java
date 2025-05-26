@@ -1,8 +1,34 @@
-package it.filippo.casadei;
+package it.filippo.casadei.benchmark;
 
 import it.filippo.casadei.model.*;
 
+/**
+ * La classe CpuDifficultyComparator funge da strumento di simulazione per confrontare le
+ * prestazioni dei diversi livelli di difficoltà della CPU in un ambiente di gioco automatizzato.
+ * Esegue un numero specificato di partite tra due giocatori CPU, ognuno con diverse
+ * strategie di difficoltà, e raccoglie risultati statistici per determinare l'efficacia
+ * di ogni configurazione.
+ * <p>
+ * Questa classe è particolarmente utile per testare e valutare il comportamento e l'esecuzione
+ * delle strategie dei giocatori CPU in una partita di Briscola.
+ * <p>
+ * Le responsabilità della classe includono:
+ * - Configurare e inizializzare partite con diverse difficoltà CPU.
+ * - Automatizzare e gestire il ciclo di gioco, inclusa la selezione e il gioco delle carte.
+ * - Confrontare e registrare i risultati delle partite tra i giocatori CPU.
+ * - Restituire le statistiche di prestazione (percentuali di vittoria e di pareggio) per ogni CPU.
+ * <p>
+ * L'esecuzione è gestita interamente all'interno del metodo main. È possibile simulare
+ * un gran numero di partite in un ciclo, rendendolo adatto per l'analisi statistica
+ * delle strategie CPU.
+ */
 public class CpuDifficultyComparator {
+    /**
+     * Simula una serie di partite automatizzate tra due giocatori CPU con differenti
+     * livelli di difficoltà e calcola le statistiche delle prestazioni per ogni livello.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         int games = 100000;
         int winsPlayer1 = 0;

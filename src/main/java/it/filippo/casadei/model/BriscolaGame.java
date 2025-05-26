@@ -3,7 +3,8 @@ package it.filippo.casadei.model;
 import java.util.Optional;
 
 /**
- * Classe che rappresenta lo stato centrale di una partita di Briscola.
+ * Gestisce lo stato e la logica di una partita a Briscola.
+ * Tiene traccia dei giocatori, del mazzo, del tavolo e della briscola.
  */
 public class BriscolaGame {
 
@@ -18,6 +19,15 @@ public class BriscolaGame {
     private boolean isBriscolaDrawn = false;
 
     // == COSTRUTTORE ==
+
+    /**
+     * Crea una nuova istanza del gioco della Briscola.
+     *
+     * @param player1 il primo giocatore che partecipa al gioco
+     * @param player2 il secondo giocatore che partecipa al gioco
+     * @param deck    il mazzo di carte da utilizzare nel gioco
+     * @param table   il tavolo per gestire le carte giocate e le interazioni durante il gioco
+     */
     public BriscolaGame(Player player1, Player player2, Deck deck, Table table) {
         this.player1 = player1;
         this.player2 = player2;
@@ -27,7 +37,8 @@ public class BriscolaGame {
 
     // == METODI PUBBLICI ==
     /**
-     * // Mescola il mazzo, distribuisce inizialmente 3 carte a ciascun giocatore e sceglie la briscola
+     * Inizializza il gioco: popola e mescola il mazzo, distribuisce le carte
+     * e pesca la briscola.
      */
     public void setupGame() {
         // Inserisce 40 carte nel mazzo
@@ -44,13 +55,21 @@ public class BriscolaGame {
         this.briscola = deck.draw();
     }
 
+    /**
+     * Gioca una carta, rimuovendola dalla mano del giocatore e posizionandola sul tavolo.
+     *
+     * @param player giocatore che gioca la carta
+     * @param card carta da giocare
+     */
     public void playCard(Player player, Card card) {
-//        System.out.println("Prima playCard: mano di "+player.getName()+": " + player.getHand());
         player.playCard(card);
         table.playCard(player, card);
-//        System.out.println("Dopo playCard: mano di "+player.getName()+": " + player.getHand());
     }
 
+    /**
+     * Valuta le due carte sul tavolo, determina il vincitore della mano
+     * e assegna i punti.
+     */
     public void evaluateHand() {
         Player firstPlayer = table.getFirstPlayer();
         Player secondPlayer = table.getSecondPlayer();
@@ -74,7 +93,12 @@ public class BriscolaGame {
         table.setPlayersOrder(winner, getOpponent(winner));
     }
 
-    /** Pesca una carta dal mazzo se è possibile e restituisce la carta */
+    /**
+     * Permette al giocatore di pescare una carta dal mazzo o la briscola, se ancora disponibile.
+     *
+     * @param player giocatore che pesca
+     * @return carta pescata, se presente
+     */
     public Optional<Card> drawCard(Player player) {
         // Se il mazzo non è vuoto -> pesca una carta
         if (!deck.isEmpty()) {
@@ -92,12 +116,20 @@ public class BriscolaGame {
         return Optional.empty();
     }
 
+    /**
+     * Verifica se la partita è conclusa.
+     *
+     * @return true se il mazzo è vuoto e le mani sono vuote
+     */
     public boolean isGameOver() {
         return deck.isEmpty()
                 && player1.getHand().isEmpty()
                 && player2.getHand().isEmpty();
     }
 
+    /**
+     * Resetta lo stato del gioco per una nuova partita.
+     */
     public void resetGame() {
         // Ripulisci il tavolo
         table.clearAll();
@@ -113,12 +145,26 @@ public class BriscolaGame {
         isBriscolaDrawn = false;
     }
 
+    /**
+     * Restituisce l'avversario del giocatore specificato.
+     *
+     * @param player giocatore di riferimento
+     * @return giocatore avversario
+     */
     public Player getOpponent(Player player) {
         if (player.equals(player1)) return player2;
         if (player.equals(player2)) return player1;
         throw new IllegalArgumentException("Giocatore sconosciuto: " + player.getName());
     }
 
+    /**
+     * Determina il vincitore della partita in base ai punti dei due giocatori.
+     * Se i punti di un giocatore superano quelli dell'altro, quel giocatore viene dichiarato vincitore.
+     * Se i punti sono uguali, non viene dichiarato alcun vincitore e la partita finisce in pareggio.
+     *
+     * @return un {@code Optional} contenente il {@code Player} vincente se c'è un vincitore,
+     * oppure un {@code Optional} vuoto se la partita è finita in pareggio.
+     */
     public Optional<Player> getWinner() {
         // Vincitore se presente è unico, altrimenti non c'è un vincitore e partita finisce in pareggio
         Optional<Player> winner;

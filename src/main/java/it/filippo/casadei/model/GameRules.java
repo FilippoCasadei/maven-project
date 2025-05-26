@@ -3,8 +3,9 @@ package it.filippo.casadei.model;
 public class GameRules {
 
     // == METODI PUBBLICI STATICI ==
+
     /**
-     * Determina quale carta vince la mano.
+     * Determina quale carta vince la mano di gioco.
      *
      * @param firstCard    La carta giocata per prima.
      * @param secondCard   La carta giocata per seconda.
@@ -33,10 +34,24 @@ public class GameRules {
         }
     }
 
+    /**
+     * Calcola il punteggio totale delle carte giocate in una mano di gioco.
+     *
+     * @param firstCard  La prima carta giocata
+     * @param secondCard La seconda carta giocata
+     * @return La somma dei punti delle due carte
+     */
     public static int calculatePointsWon(Card firstCard, Card secondCard) {
         return firstCard.getRank().getCardPoints() + secondCard.getRank().getCardPoints();
     }
 
+    /**
+     * Verifica se una carta è del seme di briscola.
+     *
+     * @param card         La carta da verificare
+     * @param briscolaSuit Il seme della briscola
+     * @return true se la carta è una briscola, false altrimenti
+     */
     public static boolean isBriscola(Card card, Suit briscolaSuit) {
         return card.getSuit() == briscolaSuit;
     }

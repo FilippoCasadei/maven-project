@@ -13,8 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * GUI implementation of BriscolaView for a 1vs1 Briscola game.
- * Uses Swing for rendering players' hands, deck, briscola, and table.
+ * Implementazione GUI di BriscolaView per una partita di Briscola 1vs1.
+ * Utilizza Swing per visualizzare le mani dei giocatori, il mazzo, la briscola e il tavolo.
  */
 public class GuiBriscolaViewImpl implements BriscolaView {
     private static final int CARD_WIDTH = 100;
@@ -68,8 +68,9 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     // == METODI PUBBLICI ==
+
     /**
-     * Shows the GUI and triggers the full session loop in the controller.
+     * Mostra la GUI e avvia il ciclo completo della sessione nel controller.
      */
     @Override
     public void start(BriscolaController controller) {
@@ -78,11 +79,11 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     /**
-     * Called by controller after model.setupGame() to display deck, briscola, and initial hands.
+     * Chiamato dal controller dopo model.setupGame() per mostrare il mazzo, la briscola e le mani iniziali.
      */
     @Override
     public void showSetup(Card briscolaCard, Player human, Player cpu) {
-        // Reveal panels
+        // Rendi visibili i panel
         cpuPanel.setVisible(true);
         humanPanel.setVisible(true);
         tablePanel.setVisible(true);
@@ -90,14 +91,14 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         briscolaPanel.setVisible(true);
         deckPanel.setVisible(true);
 
-        // Populate view
+        // Popola la view
         refreshHand(human);
         refreshHand(cpu);
         showBriscola(briscolaCard);
     }
 
     /**
-     * Asks the user to choose CPU difficulty via dialog.
+     * Chiede all'utente di scegliere la difficoltà della CPU tramite una finestra di dialogo.
      */
     @Override
     public void chooseCpuDifficulty(Cpu cpu) {
@@ -120,6 +121,11 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         }
     }
 
+    /**
+     * Mostra la carta di briscola nella GUI aggiornando il pannel corrispondente.
+     *
+     * @param briscolaCard la carta rappresentante la briscola da mostrare
+     */
     @Override
     public void showBriscola(Card briscolaCard) {
         briscolaPanel.removeAll();
@@ -128,17 +134,35 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         briscolaPanel.repaint();
     }
 
+    /**
+     * Richiede la selezione di una carta dal giocatore specificato.
+     * Questo metodo aggiorna la visualizzazione della mano del giocatore e attende
+     * l'input dell'utente per selezionare una carta. La carta selezionata viene poi restituita.
+     *
+     * @param p il giocatore di cui viene richiesta la carta
+     * @return la carta selezionata dal giocatore
+     */
     @Override
     public Card requestCard(Player p) {
-        // Refresh hands before request
+        // Fai il refresh della mano del giocatore prima
         refreshHand(p);
-        // Wait for user selection
+        // Aspetta per la selezione dell'utente
         synchronized (lock) {
-            try { lock.wait(); } catch (InterruptedException ignored) {}
+            try {
+                lock.wait();
+            } catch (InterruptedException ignored) {
+            }
         }
         return selectedCard.get();
     }
 
+    /**
+     * Mostra la carta giocata da un giocatore e aggiorna la visualizzazione della mano del giocatore.
+     * Per un giocatore non umano, simula una pausa per rappresentare il tempo di "pensiero".
+     *
+     * @param p    il giocatore che ha giocato la carta
+     * @param card la carta giocata dal giocatore
+     */
     @Override
     public void showPlayedCard(Player p, Card card) {
         boolean isHuman = p instanceof HumanPlayer;
@@ -154,6 +178,13 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         refreshHand(p);
     }
 
+    /**
+     * Mostra il risultato della mano indicando il vincitore e i punti guadagnati,
+     * e pulisce il tavolo per preparare il prossimo turno.
+     *
+     * @param winner    il giocatore che ha vinto la mano
+     * @param pointsWon i punti guadagnati dal vincitore in questa mano
+     */
     @Override
     public void showHandResult(Player winner, int pointsWon) {
         try {
@@ -161,22 +192,34 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-//        String msg = winner.getName() + " vince la mano e guadagna " + pointsWon + " punti.";
-//        JOptionPane.showMessageDialog(frame, msg, "Risultato Mano", JOptionPane.INFORMATION_MESSAGE);
         clearTable();
     }
 
+    /**
+     * Aggiorna la GUI per mostrare una carta pescata. In particolare, aggiorna il pannello
+     * del mazzo per mostrare il dorso delle carte rimanenti e aggiorna la visualizzazione
+     * della mano del giocatore che ha pescato la carta.
+     *
+     * @param p         il giocatore che ha pescato la carta
+     * @param drawnCard la carta che è stata pescata dal giocatore
+     */
     @Override
     public void showDraw(Player p, Card drawnCard) {
         deckPanel.removeAll();
         deckPanel.add(createCardLabel("back"));
         deckPanel.revalidate();
         deckPanel.repaint();
-//        String msg = p.getName() + " pesca: " + (p instanceof HumanPlayer ? drawnCard : "******");
-//        JOptionPane.showMessageDialog(frame, msg, "Pesca", JOptionPane.PLAIN_MESSAGE);
         refreshHand(p);
     }
 
+    /**
+     * Mostra i punteggi finali dei giocatori in una finestra di dialogo.
+     *
+     * @param player1  il primo giocatore di cui mostrare il punteggio finale
+     * @param player2  il secondo giocatore di cui mostrare il punteggio finale
+     * @param p1points i punti finali ottenuti dal primo giocatore
+     * @param p2points i punti finali ottenuti dal secondo giocatore
+     */
     @Override
     public void showFinalScores(Player player1, Player player2, int p1points, int p2points) {
         String sb = "--- Punteggi finali ---\n" +
@@ -185,12 +228,24 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         JOptionPane.showMessageDialog(frame, sb, "Punteggi Finali", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * Mostra un messaggio con il vincitore della partita.
+     * Se non c'è un vincitore, indica che la partita è terminata in pareggio.
+     *
+     * @param winner un oggetto Optional contenente il giocatore vincitore,
+     *               vuoto in caso di pareggio
+     */
     @Override
     public void showWinner(Optional<Player> winner) {
         String msg = "Vincitore: " + (winner.isPresent() ? winner.get().getName() : "Pareggio");
         JOptionPane.showMessageDialog(frame, msg, "Fine Partita", JOptionPane.PLAIN_MESSAGE);
     }
 
+    /**
+     * Chiede all'utente se desidera giocare un'altra partita tramite una finestra di dialogo.
+     *
+     * @return true se l'utente sceglie di giocare un'altra partita, false altrimenti
+     */
     @Override
     public boolean askPlayAgain() {
         int result = JOptionPane.showConfirmDialog(
@@ -204,7 +259,7 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     /**
-     *
+     * Nasconde la carta di briscola.
      */
     @Override
     public void hideBriscola() {
@@ -212,7 +267,7 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     /**
-     *
+     * Nasconde il mazzo.
      */
     @Override
     public void hideDeck() {
@@ -220,7 +275,7 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     /**
-     *
+     * Chiude l'applicazione.
      */
     @Override
     public void close() {
@@ -228,8 +283,9 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     // == METODI HELPER ==
+
     /**
-     * Refreshes the hand panel for the given player with fixed card size.
+     * Aggiorna il pannello della mano per il giocatore specificato con dimensioni fisse delle carte.
      */
     private void refreshHand(Player p) {
         JPanel panel = (p instanceof HumanPlayer) ? humanPanel : cpuPanel;
@@ -245,10 +301,13 @@ public class GuiBriscolaViewImpl implements BriscolaView {
             for (Card c : cards) {
                 JLabel lbl = createCardLabel(c.toFileName());
                 lbl.addMouseListener(new MouseAdapter() {
-                    @Override public void mouseClicked(MouseEvent e) {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
                         selectedCard.set(c);
                         playCardOnTable(c, true);
-                        synchronized (lock) { lock.notify(); }
+                        synchronized (lock) {
+                            lock.notify();
+                        }
                     }
                 });
                 panel.add(lbl);
@@ -259,7 +318,7 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     /**
-     * Display a played card on the table for either player.
+     * Mostra una carta giocata sul tavolo per ogni giocatore.
      */
     private void playCardOnTable(Card card, boolean isHuman) {
         JLabel lbl = createCardLabel(card.toFileName());
@@ -272,7 +331,7 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     /**
-     * Clears the table of played cards
+     * Pulisce il tavolo dalle carte giocate.
      */
     private void clearTable() {
         tablePanel.removeAll();
@@ -281,30 +340,59 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     // == JPANEL ==
+
+    /**
+     * Crea un JPanel con un'immagine di sfondo personalizzata. Il pannello viene renderizzato
+     * con l'immagine specificata che riempie i suoi limiti.
+     *
+     * @return un JPanel con un'immagine di sfondo personalizzata dipinta sulle sue dimensioni
+     */
     private JPanel createBackgroundPanel() {
         ImageIcon bgIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/background.png")));
         Image bg = bgIcon.getImage();
         return new JPanel(new BorderLayout()) {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
             }
         };
     }
 
+    /**
+     * Crea un pannello per visualizzare le carte dei giocatori nella GUI.
+     * Il layout del pannello è centrato con spaziatura uniforme tra gli elementi e ha uno sfondo trasparente.
+     *
+     * @param isHuman flag che indica se il pannello appartiene al giocatore umano (true) o alla CPU (false)
+     * @return un JPanel configurato per visualizzare la mano del giocatore
+     */
     private JPanel createHandPanel(boolean isHuman) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         panel.setOpaque(false);
         return panel;
     }
 
+    /**
+     * Crea un pannello per rappresentare il mazzo di carte nella GUI. 
+     * Il pannello ha un layout con una griglia singola, uno sfondo trasparente 
+     * e include un'etichetta che rappresenta il dorso delle carte.
+     *
+     * @return un JPanel configurato per visualizzare il mazzo di carte
+     */
     private JPanel createDeckPanel() {
-        JPanel panel = new JPanel(new GridLayout(1,1));
+        JPanel panel = new JPanel(new GridLayout(1, 1));
         panel.setOpaque(false);
         panel.add(createCardLabel("back"));
         return panel;
     }
 
+    /**
+     * Crea e restituisce un JPanel configurato per visualizzare la briscola (carta dominante) nel gioco.
+     * Il pannello utilizza un BorderLayout, ha uno sfondo trasparente e una dimensione preferita
+     * corrispondente alle dimensioni predefinite delle carte. Include anche una JLabel in alto con il testo "Briscola".
+     *
+     * @return un JPanel configurato per visualizzare la briscola nel gioco
+     */
     private JPanel createBriscolaPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
@@ -314,8 +402,12 @@ public class GuiBriscolaViewImpl implements BriscolaView {
     }
 
     // == JLABEL ==
+
     /**
-     * Creates a JLabel with fixed card dimensions.
+     * Crea una JLabel con dimensioni fisse per le carte.
+     *
+     * @param filename il nome del file dell'immagine della carta senza estensione
+     * @return una JLabel contenente l'immagine ridimensionata della carta
      */
     private JLabel createCardLabel(String filename) {
         ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/cards/" + filename + ".png")));

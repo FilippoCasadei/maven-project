@@ -3,11 +3,28 @@ package it.filippo.casadei.model;
 import java.util.Comparator;
 import java.util.Optional;
 
+/**
+ * Implementazione della difficoltà "Media" per la CPU nel gioco della Briscola.
+ * Questa strategia di gioco è più sofisticata e cerca di giocare in modo più tattico
+ * rispetto alla difficoltà facile.
+ * <p>
+ * Stile di gioco:
+ * <ul>
+ *   <li>Come primo giocatore gioca le carte di minor valore possibile</li>
+ *   <li>Come secondo giocatore cerca di prendere solo se ne vale la pena:
+ *     <ul>
+ *       <li>Prende se ha una carta più alta dello stesso seme</li>
+ *       <li>Se la carta sul tavolo è un carico usa una briscola bassa</li>
+ *       <li>Se la carta è il 3 di briscola gioca l'asso di briscola</li>
+ *       <li>Negli altri casi, oppure se non ho la carta per prendere,
+ *           gioca la carta di minor valore</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ */
+
 public class MediumDifficulty implements CpuDifficulty {
     private static final int HIGH_POINTS = 10;
-
-    // == STILE DI GIOCO ==
-    // TODO: Aggiungi note su stile di gioco
 
     // == METODI PUBBLICI ==
     /**
