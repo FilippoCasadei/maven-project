@@ -3,12 +3,20 @@ package it.filippo.casadei.model;
 import java.util.Comparator;
 import java.util.Optional;
 
-public class MediumStrategy implements CpuStrategy {
+public class MediumDifficulty implements CpuDifficulty {
     private static final int HIGH_POINTS = 10;
 
     // == STILE DI GIOCO ==
     // TODO: Aggiungi note su stile di gioco
 
+    // == METODI PUBBLICI ==
+    /**
+     * Metodo principale di scelta della carta.
+     *
+     * @param cpu  la CPU corrente
+     * @param game lo stato attuale della partita
+     * @return la carta scelta dalla CPU
+     */
     @Override
     public Card chooseCard(Cpu cpu, BriscolaGame game) {
         Table table = game.getTable();

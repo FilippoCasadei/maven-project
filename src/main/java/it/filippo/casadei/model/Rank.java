@@ -15,11 +15,13 @@ public enum Rank {
     private final String rankName;
     private final int rankPoints;
 
-    private Rank(String rankName, int rankPoints) {
+    // == COSTRUTTORE ==
+    Rank(String rankName, int rankPoints) {
         this.rankName = rankName;
         this.rankPoints = rankPoints;
     }
 
+    // == GETTER E SETTER ==
     public String getRankName() {
         return this.rankName;
     }

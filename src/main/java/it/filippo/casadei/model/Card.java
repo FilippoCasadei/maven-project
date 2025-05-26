@@ -5,16 +5,19 @@ public class Card{
     private final Suit suit;
     private final Rank rank;
 
+    // == COSTRUTTORE ==
     public Card(Suit suit, Rank rank) {
         this.suit = suit;
         this.rank = rank;
     }
 
-    // Ritorna il nome del file .png associato alla carta
+    // == METODI PUBBLICI ==
+    // Ritorna il nome del file associato alla carta
     public String toFileName() {
         return this.suit.getSuitName() + this.rank.getRankName();
     }
 
+    // == GETTER E SETTER ==
     public int getPoints() {
         return this.rank.getCardPoints();
     }
@@ -27,8 +30,9 @@ public class Card{
         return this.rank;
     }
 
+    // == ToSTRING ==
     @Override
     public String toString() {
-        return this.rank.getRankName() + " of " + this.suit.getSuitName();
+        return this.rank.getRankName() + " di " + this.suit.getSuitName();
     }
 }

@@ -13,7 +13,7 @@ class CpuTest {
     public void setUp() {
         // Creo 2 giocatori: uno umano (mock o dummy) e una CPU
         Player human = new HumanPlayer("Umano");
-        cpu = new Cpu("CPU", new EasyStrategy()); // o EasyCpuStrategy, se è lì che stai testando la logica
+        cpu = new Cpu("CPU"); // o EasyCpuStrategy, se è lì che stai testando la logica
         Deck deck = Deck.createDeck();  // o Deck.createDeck() se necessario
         Table table = new Table();
 

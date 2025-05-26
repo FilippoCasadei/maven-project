@@ -3,10 +3,8 @@ package it.filippo.casadei.controller;
 import it.filippo.casadei.model.*;
 import it.filippo.casadei.view.BriscolaView;
 import it.filippo.casadei.view.BriscolaViewObserver;
-import it.filippo.casadei.view.GuiBriscolaViewImpl;
 
-
-import java.util.*;
+import java.util.Optional;
 
 // TODO: DECIDERE SE UTILIZZARE OBSERVER O NO
 
@@ -25,22 +23,27 @@ public class BriscolaController implements BriscolaViewObserver {
         this.view = view;
         this.player1 = player1;
         this.player2 = player2;
-        this.model = new BriscolaGame(player1, player2, Deck.createDeck(), new Table());
+        this.model = new BriscolaGame(player1, player2, new Deck(), new Table());
 
         // Sceglie quale view utilizzare in base all'istanza in runtime dell'interfaccia view
         view.start(this);  //TODO: decidere se usare o no observer
     }
 
-    /** Gestisce tutta la sessione di gioco */
+    /**
+     * Gestisce tutta la sessione di gioco
+     */
     public void startGame() {
         do {
+            model.resetGame();
             playSingleGame();
         } while (view.askPlayAgain());
+        view.close();
     }
 
-    /** Gestisce una singola partita */
+    /**
+     * Gestisce una singola partita
+     */
     public void playSingleGame() {
-        // TODO: AGGIUNGERE model.initialize() che inizializza il deck e il table per la nuova partita (forse basta solo il deck)
         model.setupGame();
         view.showSetup(model.getBriscola(), player1, player2);
         view.showBriscola(model.getBriscola());
@@ -55,45 +58,43 @@ public class BriscolaController implements BriscolaViewObserver {
         Card card = (player instanceof Cpu)
                 ? ((Cpu) player).chooseCard(model)
                 : view.requestCard(player);
-        // Giocatore gioca la carta e aggiorna il model e la view
-        player.playCard(card);
+        // Giocatore gioca la carta
         model.playCard(player, card);
         view.showPlayedCard(player, card);
-
     }
+
     private void playTurn() {
         Table table = model.getTable();
 
         // Primo giocatore gioca la carta e aggiorna il model e la view
         playCard(table.getFirstPlayer());
-        // TODO: eventuale metodo per aggiornare view (le carte in mano alla mano del giocatore cambiano)
         // Secondo giocatore gioca la carta e aggiorna il model e la view
         playCard(table.getSecondPlayer());
-        // TODO: eventuale metodo per aggiornare view
 
         // Si valuta la mano di gioco
         model.evaluateHand();
-        view.showHandResult(table.getPlayOrder(), table.getWinner(), table.getPointsWon());
+        view.showHandResult(table.getWinner(), table.getPointsWon());
         table.clear();
 
         // Primo giocatore della mano successiva pesca una carta
-        model.drawCard(table.getFirstPlayer())
-                .ifPresent(c -> view.showDraw(table.getFirstPlayer(), c));
+        handleDraw(table.getFirstPlayer());
         // Secondo giocatore della mano successiva pesca una carta
-        model.drawCard(table.getFirstPlayer())
-                .ifPresent(c -> view.showDraw(table.getSecondPlayer(), c));
+        handleDraw(table.getSecondPlayer());
+    }
+
+    private void handleDraw(Player p) {
+        model.drawCard(p).ifPresent(c -> {
+            view.showDraw(p, c);
+            if (c.equals(model.getBriscola())) view.hideBriscola();
+        });
+        if (model.getDeck().isEmpty()) view.hideDeck();
     }
 
     private void endGame() {
-        Map<Player, Integer> scores = new LinkedHashMap<>();
-        scores.put(player1, player1.getPoints());
-        scores.put(player2, player2.getPoints());
-
-        view.showFinalScores(scores);
-        Player winner = (player1.getPoints() > player2.getPoints()) ? player1 : player2;
+        Optional<Player> winner = model.getWinner();
+        view.showFinalScores(player1, player2, player1.getPoints(), player2.getPoints());
         view.showWinner(winner);
     }
-
     /**
      * @param player
      * @param card
@@ -128,46 +129,4 @@ public class BriscolaController implements BriscolaViewObserver {
     public void onQuit() {
         // chiudi app
     }
-
-    public void playTurn1() {
-
-    }
 }
-
-//private void playTurn() {
-//    Table table = model.getTable();
-//    Player firstPlayer = table.getFirstPlayer();
-//    Player secondPlayer = table.getSecondPlayer();
-//
-//    // Primo giocatore sceglie la carta
-//    Card card1 = (firstPlayer instanceof Cpu)
-//            ? ((Cpu) firstPlayer).chooseCard(model)
-//            : view.requestCard(firstPlayer);
-//
-//    // Primo giocatore gioca la carta e aggiorna il model e la view
-//    firstPlayer.playCard(card1);
-//    model.registerPlayedCard(card1);
-//    table.playCard(firstPlayer, card1);
-//    view.showPlayedCard(firstPlayer, card1);
-//
-//    // Secondo giocatore sceglie la carta
-//    Card card2 = (secondPlayer instanceof Cpu)
-//            ? ((Cpu) secondPlayer).chooseCard(model)
-//            : view.requestCard(secondPlayer);
-//
-//    // Secondo giocatore gioca la carta e aggiorna il model e la view
-//    secondPlayer.playCard(card2);
-//    model.registerPlayedCard(card2);
-//    table.playCard(secondPlayer, card2);
-//    view.showPlayedCard(secondPlayer, card2);
-//}
-
-//public void startGame() {
-//    while (!isGameOver()) {
-//        playTurn();
-//        evaluateHand();
-//        drawCards();
-//        model.getTable().clear();
-//    }
-//    endGame();
-//}

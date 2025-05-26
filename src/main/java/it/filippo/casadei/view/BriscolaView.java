@@ -5,8 +5,7 @@ import it.filippo.casadei.model.Card;
 import it.filippo.casadei.model.Cpu;
 import it.filippo.casadei.model.Player;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 
 public interface BriscolaView {
@@ -28,16 +27,22 @@ public interface BriscolaView {
     void showPlayedCard(Player p, Card playedCard);
 
     /** Mostra il risultato della mano: carte, vincitore e punti guadagnati. */
-    void showHandResult(List<Map.Entry<Player, Card>> order, Player winner, int points);
+    void showHandResult(Player winner, int pointsWon);
 
     /** Mostra quale carta è stata pescata da un giocatore. */
     void showDraw(Player p, Card drawnCard);
 
     /** Mostra i punteggi finali di tutti i giocatori. */
-    void showFinalScores(Map<Player, Integer> scores);
+    void showFinalScores(Player player1, Player player2, int player1Points, int player2Points);
 
     /** Mostra il vincitore della partita. */
-    void showWinner(Player winner);
+    void showWinner(Optional<Player> winner);
 
     boolean askPlayAgain();
+
+    void hideBriscola();
+
+    void hideDeck();
+
+    void close();
 }

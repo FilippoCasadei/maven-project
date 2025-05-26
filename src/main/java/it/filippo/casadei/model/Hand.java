@@ -5,39 +5,37 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents a player's hand of cards in a card game.
+ * Rappresenta le carte in mano a un giocatore.
  */
 public class Hand {
 
-    private final List<Card> hand;
     public static final int MAX_CARDS_IN_HAND = 3;
+    private final List<Card> hand;
 
-    /**
-     * Initializes an empty hand.
-     */
+    // == COSTRUTTORE ==
     public Hand() {
         this.hand = new ArrayList<>();
     }
 
+    // == METODI PUBBLICI ==
     /**
-     * Adds a card to the hand.
+     * Aggiunge una carta alla mano.
      *
-     * @param card the card to be added
+     * @param card carta aggiunta
      */
     public void addCard(Card card) {
         // Verifico che le carte in mano non siano mai più di 2 prima di pescare una carta
         if (hand.size() >= MAX_CARDS_IN_HAND) {
-            throw new IllegalStateException("Il giocatore ha già "+ hand.size() +" carte in mano. Impossibile aggiungere una nuova carta.");
+            throw new IllegalStateException("Il giocatore ha già "+ getCards() +" carte in mano. Impossibile aggiungere una nuova carta.");
         }
-
         hand.add(card);
     }
 
     /**
-     * Removes a card from the hand.
+     * Rimuove una carta dalla mano.
      *
-     * @param card the card to be removed
-     * @throws IllegalArgumentException if the card is not in the hand
+     * @param card la carta rimossa
+     * @throws IllegalArgumentException se la carta non è presente nella mano
      */
     public void removeCard(Card card) {
         if (!hand.contains(card)) {
@@ -51,10 +49,16 @@ public class Hand {
         return hand.isEmpty();
     }
 
+    public void clear() {
+        this.hand.clear();
+    }
+
+    // == GETTER E SETTER ==
     public List<Card> getCards() {
         return Collections.unmodifiableList(hand);
     }
 
+    // == ToSTRING ==
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("[");
@@ -68,5 +72,4 @@ public class Hand {
         sb.append("]");
         return sb.toString();
     }
-
 }

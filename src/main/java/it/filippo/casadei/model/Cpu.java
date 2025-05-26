@@ -2,24 +2,25 @@ package it.filippo.casadei.model;
 
 public class Cpu extends Player{
 
-    private CpuStrategy strategy;
+    private CpuDifficulty difficulty;
 
-    public Cpu(String name, CpuStrategy strategy) {
+    // == COSTRUTTORE ==
+    public Cpu(String name) {
         super(name);
-        this.strategy = strategy;
     }
 
-    public CpuStrategy getStrategy() {
-        return strategy;
-    }
-
-    // TODO: DEVO UTILIZZARE QUESTO METODO NEL CONTROLLER/MAIN
-    public void setStrategy(CpuStrategy strategy) {
-        this.strategy = strategy;
-    }
-
+    // == METODI PUBBLICI ==
     // Sceglie la carta in base alla difficoltà (strategy) impostata
     public Card chooseCard(BriscolaGame game) {
-        return strategy.chooseCard(this, game);
+        return difficulty.chooseCard(this, game);
+    }
+
+    // == GETTER E SETTER ==
+    public CpuDifficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(CpuDifficulty difficulty) {
+        this.difficulty = difficulty;
     }
 }

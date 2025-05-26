@@ -5,12 +5,13 @@ import it.filippo.casadei.model.*;
 
 import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class ConsoleBriscolaViewImpl implements BriscolaView {
     private final Scanner scanner = new Scanner(System.in);
 
+    // == METODI PUBBLICI ==
     @Override
     public void start(BriscolaController controller) {
         System.out.println("Vuoi iniziare la partita? [Y/N]");
@@ -57,20 +58,20 @@ public class ConsoleBriscolaViewImpl implements BriscolaView {
             [3] Difficile
             ------------------------------------------------------------
             """);
-        while (cpu.getStrategy() == null) {
+        while (cpu.getDifficulty() == null) {
             String input = scanner.nextLine().trim();
             switch (input) {
                 case "1":
                     System.out.println("Difficoltà scelta di " + cpu.getName() + ": Facile");
-                    cpu.setStrategy(new EasyStrategy());
+                    cpu.setDifficulty(new EasyDifficulty());
                     break;
                 case "2":
                     System.out.println("Difficoltà scelta di " + cpu.getName() + ": Media");
-                    cpu.setStrategy(new MediumStrategy());
+                    cpu.setDifficulty(new MediumDifficulty());
                     break;
                 case "3":
                     System.out.println("Difficoltà scelta di " + cpu.getName() + ": Difficile");
-                    cpu.setStrategy(new HardStrategy());
+                    cpu.setDifficulty(new HardDifficulty());
                     break;
                 default:
                     System.out.println("Input non valido. Riprova.");
@@ -127,8 +128,8 @@ public class ConsoleBriscolaViewImpl implements BriscolaView {
     }
 
     @Override
-    public void showHandResult(List<Map.Entry<Player, Card>> order, Player winner, int points) {
-        System.out.println(winner.getName() + " vince la mano e guadagna " + points + " punti.");
+    public void showHandResult(Player winner, int pointsWon) {
+        System.out.println(winner.getName() + " vince la mano e guadagna " + pointsWon + " punti.");
     }
 
     @Override
@@ -144,19 +145,20 @@ public class ConsoleBriscolaViewImpl implements BriscolaView {
     }
 
     @Override
-    public void showFinalScores(Map<Player, Integer> scores) {
+    public void showFinalScores(Player player1, Player player2, int p1points, int p2points) {
         System.out.println("""
         ============================================================
                            PUNTEGGI FINALI
         ============================================================
         """);
-        scores.forEach((p, pts) -> System.out.println(" - " + p.getName() + ": " + pts + " punti"));
+        System.out.println(" - " + player1.getName() + ": " + p1points + " punti" );
+        System.out.println(" - " + player2.getName() + ": " + p2points + " punti" );
     }
 
     @Override
-    public void showWinner(Player winner) {
-        if (winner != null) {
-            System.out.println("\n👑 Il vincitore è: " + winner.getName() + "!");
+    public void showWinner(Optional<Player> winner) {
+        if (winner.isPresent()) {
+            System.out.println("\n👑 Il vincitore è: " + winner.get().getName() + "!");
         } else {
             System.out.println("\n🤝 La partita termina in pareggio!");
         }
@@ -165,10 +167,7 @@ public class ConsoleBriscolaViewImpl implements BriscolaView {
 
     @Override
     public boolean askPlayAgain() {
-        System.out.print("""
-
-        Vuoi giocare un'altra partita? [Y/N]: 
-        """);
+        System.out.println("Vuoi giocare un'altra partita? [Y/N]: ");
         String input = scanner.nextLine().trim().toUpperCase();
 
         while (!input.equals("Y") && !input.equals("N")) {
@@ -176,5 +175,29 @@ public class ConsoleBriscolaViewImpl implements BriscolaView {
             input = scanner.nextLine().trim().toUpperCase();
         }
         return input.equals("Y");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void hideBriscola() {
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void hideDeck() {
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void close() {
+        System.exit(0);
     }
 }

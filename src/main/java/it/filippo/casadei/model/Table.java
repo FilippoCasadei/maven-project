@@ -12,6 +12,7 @@ public class Table {
     private Player winner;
     private int pointsWon;
 
+    // == METODI PUBBLICI ==
     // NOTA: I Player sono sempre presenti e mai nulli, mentre le carte sono null finchè non vengono giocate
     public void playCard(Player player, Card card) {
         if (player.equals(firstPlayer)) {
@@ -25,8 +26,18 @@ public class Table {
         }
     }
 
-    // Elimina le carte giocate del turno precedente
+    // Elimina i dati della mano di gioco precedente
     public void clear() {
+        this.firstCard = null;
+        this.secondCard = null;
+        this.winner = null;
+        this.pointsWon = -1;
+    }
+
+    // Elimina tutti i dati del tavolo
+    public void clearAll() {
+        this.firstPlayer = null;
+        this.secondPlayer = null;
         this.firstCard = null;
         this.secondCard = null;
         this.winner = null;
@@ -45,25 +56,18 @@ public class Table {
         }
     }
 
-    public boolean bothPlayed() {
-        return firstCard != null && secondCard != null;
-    }
-
-    // TODO: Non penso serva
-    public List<Map.Entry<Player, Card>> getPlayOrder() {
-        List<Map.Entry<Player, Card>> order = new ArrayList<>(2);
-        if (firstPlayer != null) order.add(Map.entry(firstPlayer, firstCard));
-        if (secondPlayer != null) order.add(Map.entry(secondPlayer, secondCard));
-        return order;
-    }
-
-    // == GETTER ==
+    // == GETTER E SETTER ==
     public Player getFirstPlayer() {
         return firstPlayer;
     }
 
     public Player getSecondPlayer() {
         return secondPlayer;
+    }
+
+    public void setPlayersOrder(Player firstPlayer, Player secondPlayer) {
+        this.firstPlayer = firstPlayer;
+        this.secondPlayer = secondPlayer;
     }
 
     public Card getFirstCard() {
@@ -78,49 +82,16 @@ public class Table {
         return this.pointsWon;
     }
 
-    public Player getWinner() {
-        return this.winner;
-    }
-
-    // == SETTER ==
-    public void setPlayersOrder(Player firstPlayer, Player secondPlayer) {
-        this.firstPlayer = firstPlayer;
-        this.secondPlayer = secondPlayer;
-    }
-
     public void setPointsWon(int pointsWon) {
         this.pointsWon = pointsWon;
+    }
+
+    public Player getWinner() {
+        return this.winner;
     }
 
     public void setWinner(Player winner) {
         this.winner = winner;
     }
 }
-
-// TODO: MIGLIORE SCALABILITA' E GENERICITA', MA PIU COMPLESSA
-/*
-public class Table {
-    private final Map<Player, Card> playedCards = new LinkedHashMap<>();
-
-    public void playCard(Player player, Card card) {
-        playedCards.put(player, card);
-    }
-
-    public Map<Player, Card> getPlayedCards() {
-        return playedCards;
-    }
-
-    public void clear() {
-        playedCards.clear();
-    }
-
-    public Card getCardPlayedBy(Player player) {
-        return playedCards.get(player);
-    }
-
-    public List<Map.Entry<Player, Card>> getPlayOrder() {
-        return new ArrayList<>(playedCards.entrySet());
-    }
-}
-*/
 

@@ -1,17 +1,18 @@
 package it.filippo.casadei.model;
 
 public abstract class Player {
-    // TODO: SERVE IL NOME???
-    private String name;
-    private Hand hand;
+    private final String name;
+    private final Hand hand;
     private int points;
 
+    // === COSTRUTTORE ===
     public Player(String name) {
         this.name = name;
         this.hand = new Hand();
         this.points = 0;
     }
 
+    // == METODI PUBBLICI ==
     public void addCardToHand(Card card) {
         hand.addCard(card);
     }
@@ -24,7 +25,11 @@ public abstract class Player {
         this.points += pointsToAdd;
     }
 
-    // === GETTER ===
+    public void resetPoints() {
+        this.points = 0;
+    }
+
+    // == GETTER E SETTER ==
     public String getName() {
         return name;
     }

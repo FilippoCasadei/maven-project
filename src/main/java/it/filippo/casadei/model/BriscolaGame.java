@@ -1,8 +1,5 @@
 package it.filippo.casadei.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,75 +14,24 @@ public class BriscolaGame {
     private final Player player2;
     private final Deck deck;
     private final Table table;
-    private final List<Card> playedCards = new ArrayList<>();  // TODO: NON SERVE
     private Card briscola;
     private boolean isBriscolaDrawn = false;
 
+    // == COSTRUTTORE ==
     public BriscolaGame(Player player1, Player player2, Deck deck, Table table) {
         this.player1 = player1;
         this.player2 = player2;
-        this.deck = Deck.createDeck();
+        this.deck = deck;
         this.table = table;
     }
 
-    // === GETTER ===
-    public Player getPlayer1() {
-        return player1;
-    }
-
-    public Player getPlayer2() {
-        return player2;
-    }
-
-    public Deck getDeck() {
-        return deck;
-    }
-
-    public Table getTable() {
-        return table;
-    }
-
-    public Card getBriscola() {
-        return briscola;
-    }
-
-    // TODO: NON SERVE
-    public List<Card> getPlayedCards() {
-        return Collections.unmodifiableList(playedCards);
-    }
-
-    // === SETTER ===
-    public void setBriscola(Card briscola) {
-        this.briscola = briscola;
-    }
-
-    // === METODI DI SUPPORTO ===
-    // TODO: NON SERVE
-//    public void registerPlayedCard(Card card) {
-//        this.playedCards.add(card);
-//    }
-
-    public Player getOpponent(Player player) {
-        if (player.equals(player1)) return player2;
-        if (player.equals(player2)) return player1;
-        throw new IllegalArgumentException("Unknown player");
-    }
-
-    // TODO: NON SERVE
-    public boolean isCardAlreadyPlayed(Card card) {
-        return playedCards.contains(card);
-    }
-
-    public boolean isCardBriscola(Card card) {
-        return card.getSuit().equals(briscola.getSuit());
-    }
-
-    // == METODI PER LA GESTIONE DEL FLUSSO ==
-
+    // == METODI PUBBLICI ==
     /**
      * // Mescola il mazzo, distribuisce inizialmente 3 carte a ciascun giocatore e sceglie la briscola
      */
     public void setupGame() {
+        // Inserisce 40 carte nel mazzo
+        deck.populate();
         // Mescola il mazzo
         deck.shuffle();
         // Distribuisce inizialmente 3 carte a ciascun giocatore
@@ -99,11 +45,10 @@ public class BriscolaGame {
     }
 
     public void playCard(Player player, Card card) {
+//        System.out.println("Prima playCard: mano di "+player.getName()+": " + player.getHand());
+        player.playCard(card);
         table.playCard(player, card);
-    }
-
-    public boolean isHandComplete() {
-        return table.bothPlayed();
+//        System.out.println("Dopo playCard: mano di "+player.getName()+": " + player.getHand());
     }
 
     public void evaluateHand() {
@@ -149,8 +94,64 @@ public class BriscolaGame {
 
     public boolean isGameOver() {
         return deck.isEmpty()
-            && player1.getHand().isEmpty()
-            && player2.getHand().isEmpty();
+                && player1.getHand().isEmpty()
+                && player2.getHand().isEmpty();
+    }
+
+    public void resetGame() {
+        // Ripulisci il tavolo
+        table.clearAll();
+
+        // Svuota le mani e i punti dei giocatori
+        player1.getHand().clear();
+        player2.getHand().clear();
+        player1.resetPoints();
+        player2.resetPoints();
+
+        // Ripristina la briscola e il suo flag
+        briscola = null;
+        isBriscolaDrawn = false;
+    }
+
+    public Player getOpponent(Player player) {
+        if (player.equals(player1)) return player2;
+        if (player.equals(player2)) return player1;
+        throw new IllegalArgumentException("Giocatore sconosciuto: " + player.getName());
+    }
+
+    public Optional<Player> getWinner() {
+        // Vincitore se presente è unico, altrimenti non c'è un vincitore e partita finisce in pareggio
+        Optional<Player> winner;
+        if (player1.getPoints() > player2.getPoints()) {
+            winner = Optional.of(player1);
+        } else if (player2.getPoints() > player1.getPoints()) {
+            winner = Optional.of(player2);
+        } else {
+            winner = Optional.empty(); // pareggio
+        }
+
+        return winner;
+    }
+
+    // === GETTER E SETTER ===
+    public Player getPlayer1() {
+        return player1;
+    }
+
+    public Player getPlayer2() {
+        return player2;
+    }
+
+    public Deck getDeck() {
+        return deck;
+    }
+
+    public Table getTable() {
+        return table;
+    }
+
+    public Card getBriscola() {
+        return briscola;
     }
 }
 

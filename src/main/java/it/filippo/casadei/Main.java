@@ -8,22 +8,6 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-
-
-        /*
-    SETUP GIOCATORI
-    public void startGame(String difficulty) {
-    Cpu cpu = new Cpu("CPU", null);
-
-    cpu.setStrategy(DifficultyStrategyFactory.create(difficulty));
-
-    Player human = new HumanPlayer("Giocatore");
-
-    BriscolaGame game = new BriscolaGame(human, cpu, new Deck(), new Table());
-
-    // poi lanci la partita
-    }
-         */
         Scanner scanner = new Scanner(System.in);
         BriscolaView view = null;
 
@@ -45,7 +29,7 @@ public class Main {
 
         // Crea i giocatori (puoi personalizzare)
         Player p1 = new HumanPlayer("Giocatore 1");
-        Player p2 = new Cpu("CPU", null);
+        Player p2 = new Cpu("CPU");
 
         view.chooseCpuDifficulty((Cpu)p2);
 

@@ -7,6 +7,7 @@ public class Memory {
     private int opponentPoints;
     private List<Card> remainingCards;
 
+    // == METODI PUBBLICI ==
     /**
      * Ritorna quanti carichi (Asso o 3) di un dato seme sono già usciti.
      * @param suit il seme da controllare
@@ -21,26 +22,25 @@ public class Memory {
         return TOTAL_CARICHI_FOR_SUIT - (int) remainingCarichi;
     }
 
-    // === GETTER ===
+    // === GETTER E SETTER ===
     public int getMyPoints() {
         return this.myPoints;
+    }
+
+    public void setMyPoints(int myPoints) {
+        this.myPoints = myPoints;
     }
 
     public int getOpponentPoints() {
         return this.opponentPoints;
     }
 
-    public List<Card> getRemainingCards() {
-        return this.remainingCards;
-    }
-
-    // === SETTER ===
-    public void setMyPoints(int myPoints) {
-        this.myPoints = myPoints;
-    }
-
     public void setOpponentPoints(int opponentPoints) {
         this.opponentPoints = opponentPoints;
+    }
+
+    public List<Card> getRemainingCards() {
+        return this.remainingCards;
     }
 
     public void setRemainingCards(List<Card> remainingCards) {

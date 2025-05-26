@@ -8,10 +8,12 @@ public enum Suit {
 
     private final String suitName;
 
-    private Suit(String suitName) {
+    // == COSTRUTTORE ==
+    Suit(String suitName) {
         this.suitName = suitName;
     }
 
+    // == GETTER E SETTER ==
     public String getSuitName() {
         return this.suitName;
     }

@@ -10,11 +10,12 @@ import java.util.*;
  * sia quando la CPU gioca per prima che per seconda.
  *</p>
  */
-public class HardStrategy implements CpuStrategy {
+public class HardDifficulty implements CpuDifficulty {
 
     // TODO: potrei utilizzare getMyPoints() e getOpponentPoints() dalla memoria invece che dai giocatori
     private final Memory memory = new Memory();
 
+    // == METODI PUBBLICI ==
     /**
      * Metodo principale di scelta della carta.
      * Aggiorna prima la memoria di gioco, poi delega al metodo specifico
@@ -50,6 +51,7 @@ public class HardStrategy implements CpuStrategy {
         return chosen;
     }
 
+    // == METODI HELPER ==
     /**
      * Logica di scelta quando la CPU è il primo a giocare.
      * <ol>

@@ -1,8 +1,8 @@
 package it.filippo.casadei.model;
 
-// TODO: DECIDERE SE METTERE CAMPO BRISCOLASUIT O NO
 public class GameRules {
 
+    // == METODI PUBBLICI STATICI ==
     /**
      * Determina quale carta vince la mano.
      *
@@ -35,5 +35,9 @@ public class GameRules {
 
     public static int calculatePointsWon(Card firstCard, Card secondCard) {
         return firstCard.getRank().getCardPoints() + secondCard.getRank().getCardPoints();
+    }
+
+    public static boolean isBriscola(Card card, Suit briscolaSuit) {
+        return card.getSuit() == briscolaSuit;
     }
 }
