@@ -19,9 +19,8 @@ public class CpuDifficultyComparator {
             Table table = new Table();
             BriscolaGame game = new BriscolaGame(cpu1, cpu2, deck, table);
 
-            game.setupGame();
-
             // ciclo di gioco automatico
+            game.setupGame();
             while (!game.isGameOver()) {
                 Player first = table.getFirstPlayer();
                 Player second = table.getSecondPlayer();
@@ -51,8 +50,8 @@ public class CpuDifficultyComparator {
         }
 
         System.out.println("Risultati dopo " + games + " partite:");
-        System.out.println("CPU1 wins: " + winsPlayer1/games + "%");
-        System.out.println("CPU2 wins: " + winsPlayer2/games + "%");
+        System.out.println("CPU1 vittorie: " + winsPlayer1/games + "%");
+        System.out.println("CPU2 vittorie: " + winsPlayer2/games + "%");
         System.out.println("Pareggi: " + draws/games + "%");
     }
 
