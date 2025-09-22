@@ -72,6 +72,12 @@ public interface BriscolaView {
     void showDraw(Player p, Card drawnCard);
 
     /**
+     * Mostra informazioni sull'ultimo turno in cui vengono pescate le carte.
+     * Permette all'utente di conoscere qual è l'ultimo turno prima di pescare la briscola.
+     */
+    void showLastDrawingTurn();
+
+    /**
      * Mostra i punteggi finali dei giocatori.
      *
      * @param player1       il primo giocatore

@@ -28,6 +28,7 @@ import java.util.*;
  */
 public class HardDifficulty implements CpuDifficulty {
 
+    // TODO: USARE METODI card.isBriscola() e card.isCarico()
     // TODO: potrei utilizzare getMyPoints() e getOpponentPoints() dalla memoria invece che dai giocatori
     private final Memory memory = new Memory();
     
@@ -101,7 +102,7 @@ public class HardDifficulty implements CpuDifficulty {
 
         // 3) Alta non carico/non briscola in generale
         Optional<Card> step3 = cards.stream()
-                .filter(c -> !isCarico(c))
+                .filter(c -> !c.isCarico())
                 .filter(c -> !c.getSuit().equals(briscolaSuit))
                 .max(Comparator.comparingInt(Card::getPoints)
                         .thenComparing(c -> c.getRank().ordinal()));
@@ -178,9 +179,9 @@ public class HardDifficulty implements CpuDifficulty {
         // 2. Se manca l'ultima pescata cerca di perdere apposta per prendere la briscola se ne vale la pena
         if (game.getDeck().getCards().size() == 1) {
             // provo a giocare un carico, altrimenti la carta peggiore
-            if (isCarico(briscolaCard)) {
+            if (briscolaCard.isCarico()) {
                 return hand.getCards().stream()
-                        .filter(this::isCarico)
+                        .filter(Card::isCarico)
                         .findAny()
                         .orElseGet(() -> getWorstCard(hand, briscolaSuit));
             } else {
@@ -211,7 +212,7 @@ public class HardDifficulty implements CpuDifficulty {
         }
 
         // Se la carta avversaria è un carico → gioco briscole
-        if (isCarico(firstCard)) {
+        if (firstCard.isCarico()) {
             // prendo briscola alta non Asso → Asso → altrimenti carta peggiore
             Optional<Card> brNonAsso = hand.getCards().stream()
                     .filter(c -> c.getSuit().equals(briscolaSuit) && !c.getRank().equals(Rank.ACE))
@@ -292,7 +293,7 @@ public class HardDifficulty implements CpuDifficulty {
         return getLowestNonCaricoNonBriscolaWithCarichi(cards, briscolaSuit, 2)
                 .or(() -> getLowestNonCaricoNonBriscolaWithCarichi(cards, briscolaSuit, 1))
                 .or(() -> cards.stream()
-                        .filter(c -> !isCarico(c))
+                        .filter(c -> !c.isCarico())
                         .min(Comparator.comparingInt(Card::getPoints)
                                 .thenComparing(c -> c.getRank().ordinal())))
                 .or(() -> cards.stream()
@@ -307,7 +308,7 @@ public class HardDifficulty implements CpuDifficulty {
     private Optional<Card> getHighestNonCaricoNonBriscolaWithCarichi(
             List<Card> cards, Suit briscolaSuit, int carichiUsciti) {
         return cards.stream()
-                .filter(c -> !isCarico(c))
+                .filter(c -> !c.isCarico())
                 .filter(c -> !c.getSuit().equals(briscolaSuit))
                 .filter(c -> memory.getCarichiAlreadyPlayedForSuit(c.getSuit()) == carichiUsciti)
                 .max(Comparator.comparingInt(Card::getPoints)
@@ -320,31 +321,11 @@ public class HardDifficulty implements CpuDifficulty {
     private Optional<Card> getLowestNonCaricoNonBriscolaWithCarichi(
             List<Card> cards, Suit briscolaSuit, int carichiUsciti) {
         return cards.stream()
-                .filter(c -> !isCarico(c))
+                .filter(c -> !c.isCarico())
                 .filter(c -> !c.getSuit().equals(briscolaSuit))
                 .filter(c -> memory.getCarichiAlreadyPlayedForSuit(c.getSuit()) == carichiUsciti)
                 .min(Comparator.comparingInt(Card::getPoints)
                         .thenComparing(c -> c.getRank().ordinal()));
-    }
-
-    /**
-     * Ritorna true se la carta è "carico" (Asso o 3).
-     */
-    private boolean isCarico(Card c) {
-        return c.getRank() == Rank.ACE || c.getRank() == Rank.THREE;
-    }
-
-    // TODO: NON SERVE PIU
-    /**
-     * Priorità di scelta per i carichi: 0=3 senza Asso, 1=Asso, 2=altri 3.
-     */
-    private int getCaricoPriority(Card c) {
-        if (c.getRank() == Rank.THREE && memory.getCarichiAlreadyPlayedForSuit(c.getSuit()) >= 1) {
-            return 0;
-        } else if (c.getRank() == Rank.ACE) {
-            return 1;
-        }
-        return 2;
     }
 
     /**

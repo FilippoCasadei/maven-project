@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+//TODO: C'E PROBLEMA SE CLICCO MOLTE VOLTE SULLE CARTE. GESTIRE MEGLIO QUANDO LE CARTE POSSONO ESSERE CLICCATE E IL THREAD SLEEP
 /**
  * Implementazione GUI di BriscolaView per una partita di Briscola 1vs1.
  * Utilizza Swing per visualizzare le mani dei giocatori, il mazzo, la briscola e il tavolo.
@@ -19,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class GuiBriscolaViewImpl implements BriscolaView {
     private static final int CARD_WIDTH = 100;
     private static final int CARD_HEIGHT = 160;
-    private static final boolean showCpuCards = true; // utile per il testing delle scelte della cpu
+    private static final boolean showCpuCards = false; // utile per il testing delle scelte della cpu
 
     private final JFrame frame;
     private final JPanel cpuPanel;
@@ -177,6 +178,17 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         playCardOnTable(card, isHuman);
         refreshHand(p);
     }
+    // TODO: usare javax.Time invece di sleep
+    // boolean isHuman = p instanceof HumanPlayer;
+    //    if (!isHuman) {
+    //        new javax.swing.Timer(1000, e -> {
+    //            playCardOnTable(card, false);
+    //            refreshHand(p);
+    //        }).setRepeats(false).start();
+    //    } else {
+    //        playCardOnTable(card, true);
+    //        refreshHand(p);
+    //    }
 
     /**
      * Mostra il risultato della mano indicando il vincitore e i punti guadagnati,
@@ -210,6 +222,16 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         deckPanel.revalidate();
         deckPanel.repaint();
         refreshHand(p);
+    }
+
+    /**
+     * Mostra informazioni sull'ultimo turno in cui vengono pescate le carte.
+     * Permette all'utente di conoscere qual è l'ultimo turno prima di pescare la briscola.
+     */
+    @Override
+    public void showLastDrawingTurn() {
+        String msg = "Chi perde la prossima mano di gioco pescherà la briscola";
+        JOptionPane.showMessageDialog(frame, msg, "Ultimo turno di pesca", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -417,3 +439,43 @@ public class GuiBriscolaViewImpl implements BriscolaView {
         return lbl;
     }
 }
+
+//TODO: private void enableCardClicking(Player p) {
+//    if (!(p instanceof HumanPlayer)) return;
+//
+//    for (Component c : humanPanel.getComponents()) {
+//        if (c instanceof JLabel cardLabel) {
+//            for (MouseListener ml : cardLabel.getMouseListeners()) {
+//                cardLabel.removeMouseListener(ml); // Rimuovi eventuali vecchi listener
+//            }
+//            cardLabel.addMouseListener(new MouseAdapter() {
+//                @Override
+//                public void mouseClicked(MouseEvent e) {
+//                    String name = cardLabel.getName(); // es: "bastoni_1"
+//                    Card clicked = p.getHand().stream()
+//                            .filter(card -> card.toFileName().equals(name))
+//                            .findFirst().orElse(null);
+//                    if (clicked != null && selectedCard.get() == null) {
+//                        selectedCard.set(clicked);
+//                        synchronized (lock) {
+//                            lock.notifyAll();
+//                        }
+//                    }
+//                }
+//            });
+//        }
+//    }
+//}
+// @Override
+//public Card requestCard(Player p) {
+//    selectedCard.set(null);
+//    refreshHand(p); // Mostra la mano aggiornata
+//    enableCardClicking(p); // Abilita il click SOLO ORA
+//    synchronized (lock) {
+//        try {
+//            lock.wait();
+//        } catch (InterruptedException ignored) {
+//        }
+//    }
+//    return selectedCard.get();
+//}

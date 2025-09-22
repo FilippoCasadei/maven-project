@@ -24,131 +24,147 @@ import java.util.Optional;
  */
 
 public class MediumDifficulty implements CpuDifficulty {
-    private static final int HIGH_POINTS = 10;
 
     // == METODI PUBBLICI ==
+
     /**
-     * Metodo principale di scelta della carta.
+     * Determina quale carta giocare per la CPU in base allo stato corrente della partita e alla logica di difficoltà.
      *
-     * @param cpu  la CPU corrente
-     * @param game lo stato attuale della partita
-     * @return la carta scelta dalla CPU
+     * @param cpu  il giocatore CPU che deve fare la mossa
+     * @param game lo stato corrente della partita 
+     * @return la carta selezionata dalla CPU da giocare
      */
     @Override
     public Card chooseCard(Cpu cpu, BriscolaGame game) {
         Table table = game.getTable();
         Hand hand = cpu.getHand();
         Suit briscolaSuit = game.getBriscola().getSuit();
-        Optional<Card> chosen;
 
         // Caso 1: Primo a giocare
         // Gioca la carta con meno valore
         if (table.getFirstPlayer().equals(cpu)) {
-            chosen = getLessValuableCard(hand, briscolaSuit);
+            return getLessValuableCard(hand, briscolaSuit);
         }
 
         // Caso 2: Secondo a giocare
-        else {
-            Card cardOnTable = table.getFirstCard();
+        Card cardOnTable = table.getFirstCard();
 
-            // Caso 2.1: Il seme non è briscola
-            if (!cardOnTable.getSuit().equals(briscolaSuit)) {
+        // Caso 2.1: Il seme non è briscola
+        if (!cardOnTable.isBriscola(briscolaSuit)) {
 
-                // Gioca la carta dello stesso seme più alta
-                chosen = hand.getCards().stream()
-                        .filter(card -> card.getSuit().equals(cardOnTable.getSuit()))
-                        .filter(c -> c.getRank().ordinal() > cardOnTable.getRank().ordinal())
-                        .max(Comparator.comparingInt(Card::getPoints));
+            // Gioca la carta dello stesso seme più alta
+            Optional<Card> chosen = hand.getCards().stream()
+                    .filter(card -> card.getSuit().equals(cardOnTable.getSuit()))
+                    .filter(c -> c.getRank().ordinal() > cardOnTable.getRank().ordinal())
+                    .max(Comparator.comparingInt(Card::getPoints));
 
-                // Se non ne ho osserva il valore della carta sul tavolo
-                if (chosen.isEmpty()) {
-
-                    // Se la carta sul tavolo non è un carico gioca la carta dal valore più basso
-                    if (cardOnTable.getPoints() < HIGH_POINTS) {
-                        chosen = getLessValuableCard(hand, briscolaSuit);
-                    }
-
-                    // Se la carta sul tavolo è un carico
-                    else {
-                        // Gioca la briscola più bassa
-                        chosen = getLowestPointBriscola(hand, briscolaSuit);
-
-                        // Se non ne ho gioca la carta più bassa
-                        if (chosen.isEmpty()) {
-                            chosen = getLowestPointNotBriscola(hand, briscolaSuit);
-                        }
-                    }
-                }
+            if (chosen.isPresent()) {
+                return chosen.get();
             }
 
-            // Caso 2.2: Il seme è briscola
-            else {
-                // Se è il 3 di briscola prendi con l'asso
-                if (cardOnTable.getRank().equals(Rank.THREE)) {
-                    chosen = hand.getCards().stream()
-                            .filter(c -> c.getRank().equals(Rank.ACE) && c.getSuit().equals(briscolaSuit))
-                            .findAny();
+            // Se la carta sul tavolo non è un carico gioca la carta dal valore più basso
+            if (!cardOnTable.isCarico()) {
+                return getLessValuableCard(hand, briscolaSuit);
+            }
 
-                    // Se non ho l'asso gioca la carta con meno valore
-                    if (chosen.isEmpty()) {
-                        chosen = getLessValuableCard(hand, briscolaSuit);
-                    }
-                }
+            // Se la carta sul tavolo è un carico gioca la briscola più bassa
+            chosen = getLowestPointBriscola(hand, briscolaSuit);
+            if (chosen.isPresent()) {
+                return chosen.get();
+            }
 
-                // Altrimenti gioca la carta con meno valore
-                else {
-                    chosen = getLessValuableCard(hand, briscolaSuit);
-                }
+            // Se non ne ho gioca la carta più bassa non di briscola
+            return getLowestPointCard(hand);
+        }
+
+        // Caso 2.2: Il seme è briscola
+
+        // Se è il 3 di briscola prendi con l'asso
+        if (cardOnTable.getRank().equals(Rank.THREE)) {
+            Optional<Card> chosen = hand.getCards().stream()
+                    .filter(c -> c.getRank().equals(Rank.ACE) && c.getSuit().equals(briscolaSuit))
+                    .findAny();
+
+            if (chosen.isPresent()) {
+                return chosen.get();
             }
         }
-        return chosen.orElseThrow(() -> new RuntimeException("No chosen Card"));
+
+        // Altrimenti gioca la carta con meno valore
+        return getLessValuableCard(hand, briscolaSuit);
     }
+
 
     // == METODI HELPER ==
-    private Optional<Card> getLessValuableCard(Hand hand, Suit briscolaSuit) {
-        Optional<Card> card;
 
-        card = getLowestPointNotBriscola(hand, briscolaSuit);
-
-        if (card.isEmpty()) {
-            card = getLowestPointBriscola(hand, briscolaSuit);
-        }
-
-        if (card.isEmpty()) {
-            card = getLowestPointCard(hand, briscolaSuit);
-        }
-
-        return card;
+    /**
+     * Restituisce la carta meno preziosa dalla mano, considerando il seme di briscola.
+     * Il metodo cerca di selezionare la carta col minor valore che sia:
+     * 1. Non di briscola
+     * 2. La briscola col minor punteggio se non ci sono carte non di briscola
+     * 3. In ultima analisi la carta col minor punteggio in assoluto
+     *
+     * @param hand         la mano di carte da cui selezionare la carta meno preziosa
+     * @param briscolaSuit il seme designato come briscola per la partita
+     * @return la carta meno preziosa secondo la logica definita
+     * @throws RuntimeException se la mano è vuota
+     */
+    private Card getLessValuableCard(Hand hand, Suit briscolaSuit) {
+        return getLowestPointNotBriscola(hand, briscolaSuit)
+                .or(() -> getLowestPointBriscola(hand, briscolaSuit))
+                .or(() -> Optional.of(getLowestPointCard(hand)))
+                .get();
     }
 
-    private Optional<Card> getLowestPointCard(Hand hand, Suit briscolaSuit) {
-        Optional<Card> card;
-
-        card = hand.getCards().stream()
-                .min(Comparator.comparingInt(Card::getPoints).thenComparing(c -> c.getRank().ordinal()));
-
-        return card;
+    /**
+     * Determina la carta dalla mano data con il valore di punti più basso.
+     * Se più carte hanno lo stesso valore di punti, viene selezionata la carta con il rango più basso.
+     * Se la mano è vuota, viene lanciata una RuntimeException.
+     *
+     * @param hand la mano di carte da analizzare
+     * @return la carta con il valore di punti più basso, o il rango più basso in caso di parità
+     * @throws RuntimeException se la mano è vuota
+     */
+    private Card getLowestPointCard(Hand hand) {
+        return hand.getCards().stream()
+                .min(Comparator.comparingInt(Card::getPoints)
+                        .thenComparing(c -> c.getRank().ordinal()))
+                .orElseThrow(() -> new RuntimeException("La mano è vuota."));
     }
 
-    // carta + bassa non di briscola
+    /**
+     * Cerca la carta con il minor punteggio dalla mano che non sia un carico (carte di alto valore)
+     * e che non sia del seme di briscola.
+     * Se più carte soddisfano i criteri, viene selezionata quella con il rank più basso.
+     *
+     * @param hand         la mano da cui selezionare la carta
+     * @param briscolaSuit il seme designato come briscola per la partita
+     * @return un Optional contenente la carta con il minor punteggio che non sia un carico
+     * né del seme di briscola, oppure un Optional vuoto se non esiste tale carta
+     */
     private Optional<Card> getLowestPointNotBriscola(Hand hand, Suit briscolaSuit) {
-        Optional<Card> card;
-
-        card = hand.getCards().stream()
-                .filter(c -> !(c.getSuit().equals(briscolaSuit) && (c.getPoints() >= HIGH_POINTS)))
-                .min(Comparator.comparingInt(Card::getPoints).thenComparing(c -> c.getRank().ordinal()));
-
-        return card;
+        return hand.getCards().stream()
+                .filter(c -> !c.isCarico())
+                .filter(c -> !c.isBriscola(briscolaSuit))
+                .min(Comparator.comparingInt(Card::getPoints)
+                        .thenComparing(c -> c.getRank().ordinal()));
     }
 
-    // carta + bassa di briscola
+    /**
+     * Cerca e restituisce dalla mano data la carta di briscola con il minor punteggio.
+     * Tra le carte del seme di briscola, seleziona quella con il punteggio più basso.
+     * In caso di parità di punteggio, viene scelta la carta con il rank più basso.
+     *
+     * @param hand         la mano di carte da analizzare
+     * @param briscolaSuit il seme designato come briscola per la partita
+     * @return un Optional contenente la carta di briscola con il minor punteggio,
+     * oppure un Optional vuoto se non esistono carte di briscola nella mano
+     */
     private Optional<Card> getLowestPointBriscola(Hand hand, Suit briscolaSuit) {
-        Optional<Card> card;
-
-        card = hand.getCards().stream()
-                .filter(c -> c.getSuit().equals(briscolaSuit))
-                .min(Comparator.comparingInt(Card::getPoints).thenComparing(c -> c.getRank().ordinal()));
-
-        return card;
+        return hand.getCards().stream()
+                .filter(c -> !c.isCarico())
+                .filter(c -> c.isBriscola(briscolaSuit))
+                .min(Comparator.comparingInt(Card::getPoints)
+                        .thenComparing(c -> c.getRank().ordinal()));
     }
 }

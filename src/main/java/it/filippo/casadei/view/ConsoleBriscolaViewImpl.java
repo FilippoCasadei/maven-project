@@ -193,6 +193,16 @@ public class ConsoleBriscolaViewImpl implements BriscolaView {
     }
 
     /**
+     * Mostra informazioni sull'ultimo turno in cui vengono pescate le carte.
+     * Permette all'utente di conoscere qual è l'ultimo turno prima di pescare la briscola.
+     */
+    @Override
+    public void showLastDrawingTurn() {
+        System.out.println("Il prossimo è l'ultimo turno di pescata.");
+        System.out.println("Il giocatore che perde la mano di gioco pescherà la briscola.");
+    }
+
+    /**
      * Mostra i punteggi finali di entrambi i giocatori.
      *
      * @param player1  il primo giocatore

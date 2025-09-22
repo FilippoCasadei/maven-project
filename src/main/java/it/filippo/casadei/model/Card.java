@@ -25,6 +25,23 @@ public class Card {
     // == METODI PUBBLICI ==
 
     /**
+     * Verifica se una carta è del seme di briscola.
+     *
+     * @param briscolaSuit Il seme della briscola
+     * @return true se la carta è una briscola, false altrimenti
+     */
+    public boolean isBriscola(Suit briscolaSuit) {
+        return this.getSuit() == briscolaSuit;
+    }
+
+    /**
+     * Ritorna true se la carta è un "carico" (Asso o 3).
+     */
+    public boolean isCarico() {
+        return this.getRank() == Rank.ACE || this.getRank() == Rank.THREE;
+    }
+
+    /**
      * Restituisce il nome del file associato alla carta per caricare l'immagine corrispondente.
      *
      * @return nome del file della carta nel formato "seme+valore" (es. "coppe1")

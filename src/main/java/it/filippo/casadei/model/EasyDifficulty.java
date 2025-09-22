@@ -46,7 +46,7 @@ public class EasyDifficulty implements CpuDifficulty {
      */
     private Optional<Card> getHighestPointBriscola(Hand hand, Suit briscolaSuit) {
         return hand.getCards().stream()
-                .filter(c -> GameRules.isBriscola(c, briscolaSuit))
+                .filter(c -> c.isBriscola(briscolaSuit))
                 .max(Comparator.comparingInt(Card::getPoints)
                         .thenComparing(c -> c.getRank().ordinal()));
     }

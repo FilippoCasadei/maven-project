@@ -44,15 +44,4 @@ public class GameRules {
     public static int calculatePointsWon(Card firstCard, Card secondCard) {
         return firstCard.getRank().getCardPoints() + secondCard.getRank().getCardPoints();
     }
-
-    /**
-     * Verifica se una carta è del seme di briscola.
-     *
-     * @param card         La carta da verificare
-     * @param briscolaSuit Il seme della briscola
-     * @return true se la carta è una briscola, false altrimenti
-     */
-    public static boolean isBriscola(Card card, Suit briscolaSuit) {
-        return card.getSuit() == briscolaSuit;
-    }
 }

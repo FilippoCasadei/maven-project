@@ -19,6 +19,16 @@ public class BriscolaController implements BriscolaViewObserver {
     private final Player player1;
     private final Player player2;
 
+    // == COSTRUTTORE ==
+
+    /**
+     * Crea una nuova istanza del controller per gestire una partita di Briscola.
+     * Inizializza il model con i giocatori forniti, un nuovo mazzo e un nuovo tavolo da gioco.
+
+     * @param view    l'interfaccia utente da utilizzare per la partita
+     * @param player1 il primo giocatore della partita
+     * @param player2 il secondo giocatore della partita
+     */
     public BriscolaController(BriscolaView view, Player player1, Player player2) {
         this.view = view;
         this.player1 = player1;
@@ -29,12 +39,15 @@ public class BriscolaController implements BriscolaViewObserver {
         view.start(this);  //TODO: decidere se usare o no observer
     }
 
+    // == METODI PUBBLICI ==
     /**
-     * Gestisce tutta la sessione di gioco
+     * Gestisce tutta la sessione di gioco ripetendo il ciclo di gioco finché l'utente non decide
+     * di terminare la sessione
      */
     public void startGame() {
+        // ciclo del gioco finché non si decide di terminare la sessione
         do {
-            model.resetGame();
+            model.resetGame();  // resetta lo stato del gioco allo stato iniziale (necessario in caso di nuova partita)
             playSingleGame();
         } while (view.askPlayAgain());
         view.close();
@@ -53,8 +66,17 @@ public class BriscolaController implements BriscolaViewObserver {
         endGame();
     }
 
+    // == METODI HELPER ==
+    
+    /**
+     * Gestisce il processo di giocata di una carta da parte di un giocatore.
+     * Se il giocatore è una CPU, la carta viene scelta automaticamente,
+     * altrimenti viene richiesta all'utente attraverso la view.
+     *
+     * @param player il giocatore che deve giocare la carta
+     */
     private void playCard(Player player) {
-        // Giocatore sceglie la carta (il modo dipende se è Cpu o umano)
+        // Giocatore sceglie la carta (il modo dipende se player è Cpu o umano)
         Card card = (player instanceof Cpu)
                 ? ((Cpu) player).chooseCard(model)
                 : view.requestCard(player);
@@ -63,6 +85,11 @@ public class BriscolaController implements BriscolaViewObserver {
         view.showPlayedCard(player, card);
     }
 
+    
+    /**
+     * Gestisce un singolo turno di gioco.
+     * I giocatori giocano una carta > Si valuta la mano di gioco > I giocatori pescano una carta
+     */
     private void playTurn() {
         Table table = model.getTable();
 
@@ -82,19 +109,35 @@ public class BriscolaController implements BriscolaViewObserver {
         handleDraw(table.getSecondPlayer());
     }
 
+    
+    /**
+     * Gestisce il processo di pesca di una carta per un giocatore
+     *
+     * @param p il giocatore che deve pescare la carta
+     */
     private void handleDraw(Player p) {
         model.drawCard(p).ifPresent(c -> {
             view.showDraw(p, c);
-            if (c.equals(model.getBriscola())) view.hideBriscola();
+            // Se rimane una carta nel deck avvisa utente che il prossimo è l'ultimo turno di pesca
+            if (model.getDeck().size() == 1) view.showLastDrawingTurn();
+            // Se la carta pescata è la briscola elimina la briscola dal tavolo
+            else if (c.equals(model.getBriscola())) view.hideBriscola();
         });
+        // Se il deck è vuoto elimina il deck dal tavolo 
         if (model.getDeck().isEmpty()) view.hideDeck();
     }
 
+
+    /**
+     * Gestisce la fine della partita mostrando i punteggi finali e il vincitore.
+     */
     private void endGame() {
         Optional<Player> winner = model.getWinner();
         view.showFinalScores(player1, player2, player1.getPoints(), player2.getPoints());
         view.showWinner(winner);
     }
+
+
     /**
      * @param player
      * @param card
