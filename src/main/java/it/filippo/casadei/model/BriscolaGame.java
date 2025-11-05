@@ -1,8 +1,16 @@
 package it.filippo.casadei.model;
 
+import it.filippo.casadei.model.card.Card;
+import it.filippo.casadei.model.card.Suit;
+import it.filippo.casadei.model.player.cpu.Cpu;
+import it.filippo.casadei.model.player.Hand;
+import it.filippo.casadei.model.player.Player;
+
 import java.util.Optional;
 
 /**
+ * Classe Model dell'architettura MVC.
+ * 
  * Gestisce lo stato e la logica di una partita a Briscola.
  * Tiene traccia dei giocatori, del mazzo, del tavolo e della briscola.
  */
@@ -25,17 +33,16 @@ public class BriscolaGame {
      *
      * @param player1 il primo giocatore che partecipa al gioco
      * @param player2 il secondo giocatore che partecipa al gioco
-     * @param deck    il mazzo di carte da utilizzare nel gioco
-     * @param table   il tavolo per gestire le carte giocate e le interazioni durante il gioco
      */
-    public BriscolaGame(Player player1, Player player2, Deck deck, Table table) {
+    public BriscolaGame(Player player1, Player player2) {
         this.player1 = player1;
         this.player2 = player2;
-        this.deck = deck;
-        this.table = table;
+        this.deck = new Deck();
+        this.table = new Table();
     }
 
     // == METODI PUBBLICI ==
+
     /**
      * Inizializza il gioco: popola e mescola il mazzo, distribuisce le carte
      * e pesca la briscola.
@@ -45,6 +52,15 @@ public class BriscolaGame {
         deck.populate();
         // Mescola il mazzo
         deck.shuffle();
+        
+        // Inizializza la memoria della CPU
+        if (player1 instanceof Cpu) {
+            ((Cpu) player1).initializeMemory(deck.getCards());
+        }
+        if (player2 instanceof Cpu) {
+            ((Cpu) player2).initializeMemory(deck.getCards());
+        }
+        
         // Distribuisce inizialmente 3 carte a ciascun giocatore
         table.setPlayersOrder(player1, player2);
         for (int i = 0; i < Hand.MAX_CARDS_IN_HAND; i++) {
@@ -62,8 +78,8 @@ public class BriscolaGame {
      * @param card carta da giocare
      */
     public void playCard(Player player, Card card) {
-        player.playCard(card);
         table.playCard(player, card);
+        player.playCard(card);
     }
 
     /**
@@ -76,8 +92,8 @@ public class BriscolaGame {
         Suit briscolaSuit = briscola.getSuit();
 
         // Prende la prima e seconda carta giocata
-        Card firstCard = table.getCardPlayedBy(firstPlayer);
-        Card secondCard = table.getCardPlayedBy(secondPlayer);
+        Card firstCard = table.getFirstCard();
+        Card secondCard = table.getSecondCard();
 
         // Determina il vincitore della mano di gioco
         int winIdx = GameRules.compareCards(firstCard, secondCard, briscolaSuit);
@@ -88,6 +104,14 @@ public class BriscolaGame {
         int points = GameRules.calculatePointsWon(firstCard, secondCard);
         winner.addPoints(points);
         table.setPointsWon(points);
+
+        // Aggiorna i punti nella memoria della cpu e segna le carte viste durante il turno
+        if (winner instanceof Cpu) {
+            ((Cpu) winner).updateAfterTurn(points, table.getPlayedCards(), true);
+        } 
+        if (getOpponent(winner) instanceof Cpu) {
+            ((Cpu) getOpponent(winner)).updateAfterTurn(points, table.getPlayedCards(), false);
+        }
 
         // Il vincitore gioca per primo il turno successivo e il perdente per secondo
         table.setPlayersOrder(winner, getOpponent(winner));
@@ -132,7 +156,7 @@ public class BriscolaGame {
      */
     public void resetGame() {
         // Ripulisci il tavolo
-        table.clearAll();
+        table.reset();
 
         // Svuota le mani e i punti dei giocatori
         player1.getHand().clear();
@@ -140,7 +164,7 @@ public class BriscolaGame {
         player1.resetPoints();
         player2.resetPoints();
 
-        // Ripristina la briscola e il suo flag
+        // Ripristina la briscola
         briscola = null;
         isBriscolaDrawn = false;
     }
@@ -168,12 +192,15 @@ public class BriscolaGame {
     public Optional<Player> getWinner() {
         // Vincitore se presente è unico, altrimenti non c'è un vincitore e partita finisce in pareggio
         Optional<Player> winner;
+        // vittoria di player1
         if (player1.getPoints() > player2.getPoints()) {
             winner = Optional.of(player1);
+        // vittoria di player2
         } else if (player2.getPoints() > player1.getPoints()) {
             winner = Optional.of(player2);
+        // pareggio
         } else {
-            winner = Optional.empty(); // pareggio
+            winner = Optional.empty(); 
         }
 
         return winner;

@@ -1,9 +1,11 @@
-package it.filippo.casadei.model;
+package it.filippo.casadei.model.player;
+
+import it.filippo.casadei.model.card.Card;
 
 /**
  * Rappresenta un giocatore astratto nel gioco della Briscola.
  * Ogni giocatore ha un nome, una mano di carte e un punteggio.
- * Questa classe fornisce le funzionalità di base comuni a tutti i tipi di giocatori.
+ * Questa classe fornisce le funzionalità di base comuni a tutti i tipi di giocatori (umano e cpu).
  */
 public abstract class Player {
     private final String name;
@@ -62,29 +64,14 @@ public abstract class Player {
 
     // == GETTER E SETTER ==
 
-    /**
-     * Restituisce il nome del giocatore.
-     *
-     * @return il nome del giocatore
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * Restituisce la mano corrente del giocatore.
-     *
-     * @return la mano contenente le carte del giocatore
-     */
     public Hand getHand() {
         return hand;
     }
 
-    /**
-     * Restituisce il punteggio attuale del giocatore.
-     *
-     * @return il punteggio del giocatore
-     */
     public int getPoints() {
         return points;
     }

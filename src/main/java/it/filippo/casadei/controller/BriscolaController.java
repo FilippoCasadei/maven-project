@@ -1,175 +1,267 @@
 package it.filippo.casadei.controller;
 
+import javax.swing.Timer;   // per gestire i delay nell'interfaccia grafica
+
 import it.filippo.casadei.model.*;
-import it.filippo.casadei.view.BriscolaView;
-import it.filippo.casadei.view.BriscolaViewObserver;
-
-import java.util.Optional;
-
-// TODO: DECIDERE SE UTILIZZARE OBSERVER O NO
+import it.filippo.casadei.model.card.Card;
+import it.filippo.casadei.model.player.*;
+import it.filippo.casadei.model.player.cpu.Cpu;
+import it.filippo.casadei.model.player.cpu.CpuDifficulty;
+import it.filippo.casadei.model.player.cpu.GameContext;
+import it.filippo.casadei.view.*;
 
 /**
- * Controller per gestire il flusso di una partita di Briscola 1vs1.
- * Si appoggia a un'interfaccia GameView per tutte le interazioni con l'utente (console, GUI, ecc.).
+ * Classe Controller dell'archittetura MVC.
+ * 
+ * Controller del gioco Briscola che gestisce la logica del gioco e l'interazione
+ * tra il modello (BriscolaGame) e la vista (BriscolaView).
+ * Implementa una macchina a stati per gestire i vari momenti del gioco.
  */
-
 public class BriscolaController implements BriscolaViewObserver {
-    private final BriscolaGame model;
+    
     private final BriscolaView view;
-    private final Player player1;
-    private final Player player2;
+    private BriscolaGame model;  // non final perché inizializzato dopo la scelta della difficoltà CPU
+    private GameState currentState;
 
-    // == COSTRUTTORE ==
+    private static final int DELAY_THINKING_CPU = 1000;
+    private static final int DELAY_CLEAR_TABLE = 2000;
+    
+    // === COSTRUTTORE ===
 
     /**
-     * Crea una nuova istanza del controller per gestire una partita di Briscola.
-     * Inizializza il model con i giocatori forniti, un nuovo mazzo e un nuovo tavolo da gioco.
-
-     * @param view    l'interfaccia utente da utilizzare per la partita
-     * @param player1 il primo giocatore della partita
-     * @param player2 il secondo giocatore della partita
+     * Crea un nuovo controller per il gioco.
      */
-    public BriscolaController(BriscolaView view, Player player1, Player player2) {
-        this.view = view;
-        this.player1 = player1;
-        this.player2 = player2;
-        this.model = new BriscolaGame(player1, player2, new Deck(), new Table());
-
-        // Sceglie quale view utilizzare in base all'istanza in runtime dell'interfaccia view
-        view.start(this);  //TODO: decidere se usare o no observer
+    public BriscolaController() {
+        this.view = new BriscolaViewImpl();
+        this.view.setObserver(this);
+        this.view.start();
+        // Chiede la difficoltà della CPU per creare il model in createModel()
+        chooseCpuDifficulty();
+        // Avvia il gioco dopo che il model è stato creato
+        startGame();
     }
 
-    // == METODI PUBBLICI ==
-    /**
-     * Gestisce tutta la sessione di gioco ripetendo il ciclo di gioco finché l'utente non decide
-     * di terminare la sessione
-     */
-    public void startGame() {
-        // ciclo del gioco finché non si decide di terminare la sessione
-        do {
-            model.resetGame();  // resetta lo stato del gioco allo stato iniziale (necessario in caso di nuova partita)
-            playSingleGame();
-        } while (view.askPlayAgain());
-        view.close();
+    // == METODI PUBBLICI OBSERVER ==
+
+    @Override
+    public void humanPlaysCard(Player humanPlayer, Card cardChosen) {
+        
+        // Gioca la carta e aggiorna la view
+        model.playCard(humanPlayer, cardChosen);
+        view.disableCardSelection();
+        view.showPlayedCard(humanPlayer, cardChosen);
+        
+        // Transizione allo stato successivo
+        GameState nextState = (currentState == GameState.PLAYER1_TURN) 
+            ? GameState.PLAYER2_TURN 
+            : GameState.EVALUATING_HAND;
+        transitionTo(nextState);
     }
 
-    /**
-     * Gestisce una singola partita
-     */
-    public void playSingleGame() {
-        model.setupGame();
-        view.showSetup(model.getBriscola(), player1, player2);
-        view.showBriscola(model.getBriscola());
-        while (!model.isGameOver()) {
-            playTurn();
+    @Override
+    public void createModel(CpuDifficulty difficulty) {
+        Player humanPlayer = new Human("Utente");
+        Player cpuPlayer = new Cpu("CPU", difficulty);
+        this.model = new BriscolaGame(humanPlayer, cpuPlayer);
+    }
+
+    @Override
+    public void restartGame(boolean playAgain) {
+
+        // Se l'utente vuole giocare di nuovo, resetta il gioco e avvia una nuova partita
+        if (playAgain) {
+            model.resetGame();
+            startGame();
+        // Altrimenti termina applicazione
+        } else {
+            System.exit(0);  
         }
-        endGame();
     }
 
-    // == METODI HELPER ==
-    
+    // == METODI PRIVATI ==
+
     /**
-     * Gestisce il processo di giocata di una carta da parte di un giocatore.
-     * Se il giocatore è una CPU, la carta viene scelta automaticamente,
-     * altrimenti viene richiesta all'utente attraverso la view.
-     *
-     * @param player il giocatore che deve giocare la carta
+     * Avvia il gioco.
      */
-    private void playCard(Player player) {
-        // Giocatore sceglie la carta (il modo dipende se player è Cpu o umano)
-        Card card = (player instanceof Cpu)
-                ? ((Cpu) player).chooseCard(model)
-                : view.requestCard(player);
-        // Giocatore gioca la carta
-        model.playCard(player, card);
-        view.showPlayedCard(player, card);
+    private void startGame() {
+        model.setupGame();
+        view.showSetup(model.getBriscola(), model.getPlayer1(), model.getPlayer2());
+        
+        // Stato di gioco iniziale dopo il setup
+        currentState = GameState.PLAYER1_TURN;
+        processCurrentState();
     }
 
-    
-    /**
-     * Gestisce un singolo turno di gioco.
-     * I giocatori giocano una carta > Si valuta la mano di gioco > I giocatori pescano una carta
+    /*
+     * Chiede alla view di scegliere la difficoltà della CPU. La view poi notifica
+     * indietro per creare il model in base alla scelta fatta in createModel().
      */
-    private void playTurn() {
-        Table table = model.getTable();
+    private void chooseCpuDifficulty() {
+        view.chooseCpuDifficulty();
+    }
 
-        // Primo giocatore gioca la carta e aggiorna il model e la view
-        playCard(table.getFirstPlayer());
-        // Secondo giocatore gioca la carta e aggiorna il model e la view
-        playCard(table.getSecondPlayer());
-
-        // Si valuta la mano di gioco
+    /*
+     * Processa lo stato corrente del gioco e invoca la logica appropriata.
+     */
+    private void processCurrentState() {
+        switch (currentState) {
+            case PLAYER1_TURN:
+                handlePlayerTurn(model.getTable().getFirstPlayer(), GameState.PLAYER2_TURN);
+                break;
+                
+            case PLAYER2_TURN:
+                handlePlayerTurn(model.getTable().getSecondPlayer(), GameState.EVALUATING_HAND);
+                break;
+                
+            case EVALUATING_HAND:
+                evaluateHand();
+                break;
+                
+            case DRAWING_CARDS:
+                handleDrawing();
+                break;
+                
+            case GAME_OVER:
+                endGame();
+                break;
+            
+            default:
+                throw new IllegalStateException("Stato di gioco invalido: " + currentState);
+        }
+    }
+    
+    /*
+     * Gestisce il turno di un giocatore, sia umano che CPU.
+     * 
+     * @param player il giocatore di cui è il turno
+     * @param nextState lo stato successivo dopo il turno del giocatore
+     */
+    private void handlePlayerTurn(Player player, GameState nextState) {
+        // Turno della CPU
+        if (player instanceof Cpu) {
+            // delay per simulare il pensiero della CPU
+            Timer timer = new Timer(DELAY_THINKING_CPU, e -> {
+                cpuPlaysCard((Cpu) player);
+                transitionTo(nextState);
+            });
+            timer.setRepeats(false);
+            timer.start();
+        // Turno dell'utente
+        } else {
+            // abilita selezione carta nella view e aspetta l'interazione dell'utente
+            view.enableCardSelection(player);
+            // Il flusso riprenderà in humanPlaysCard()
+        }
+    }
+    
+    /*
+     * Gestisce la logica per far giocare una carta alla CPU.
+     * 
+     * @param cpu la CPU che deve giocare una carta
+     */
+    private void cpuPlaysCard(Cpu cpu) {
+        GameContext context = createGameContext(cpu);
+        Card chosen = cpu.chooseCard(context);
+        
+        model.playCard(cpu, chosen);
+        view.showPlayedCard(cpu, chosen);
+    }
+    
+    /*
+     * Valuta la mano giocata, determina il vincitore e aggiorna i punteggi.
+     */
+    private void evaluateHand() {
         model.evaluateHand();
-        view.showHandResult(table.getWinner(), table.getPointsWon());
-        table.clear();
-
-        // Primo giocatore della mano successiva pesca una carta
-        handleDraw(table.getFirstPlayer());
-        // Secondo giocatore della mano successiva pesca una carta
-        handleDraw(table.getSecondPlayer());
-    }
-
-    
-    /**
-     * Gestisce il processo di pesca di una carta per un giocatore
-     *
-     * @param p il giocatore che deve pescare la carta
-     */
-    private void handleDraw(Player p) {
-        model.drawCard(p).ifPresent(c -> {
-            view.showDraw(p, c);
-            // Se rimane una carta nel deck avvisa utente che il prossimo è l'ultimo turno di pesca
-            if (model.getDeck().size() == 1) view.showLastDrawingTurn();
-            // Se la carta pescata è la briscola elimina la briscola dal tavolo
-            else if (c.equals(model.getBriscola())) view.hideBriscola();
+        
+        // Pausa per lasciare sul tavolo le carte per un po' prima di pulire
+        Timer timer = new Timer(DELAY_CLEAR_TABLE, e -> {  
+            model.getTable().clear();
+            view.clearTable();
+            transitionTo(GameState.DRAWING_CARDS);
         });
-        // Se il deck è vuoto elimina il deck dal tavolo 
-        if (model.getDeck().isEmpty()) view.hideDeck();
+        timer.setRepeats(false);
+        timer.start();
     }
+    
+    /*
+     * Gestisce la fase di pesca delle carte dopo la valutazione della mano di gioco.
+     */
+    private void handleDrawing() {
+        Player firstPlayer = model.getTable().getFirstPlayer();
+        Player secondPlayer = model.getTable().getSecondPlayer();
+        
+        drawCardFor(firstPlayer);
+        drawCardFor(secondPlayer);
+        
+        // Controlla se il gioco è finito, altrimenti ricomincia un nuovo turno
+        if (model.isGameOver()) {
+            transitionTo(GameState.GAME_OVER);
+        } else {
+            transitionTo(GameState.PLAYER1_TURN);
+        }
+    }
+    
+    /*
+     * Permette a un giocatore di pescare una carta (se presente) e aggiorna la vista di conseguenza.
+     * 
+     * @param player il giocatore che deve pescare una carta
+     */
+    private void drawCardFor(Player player) {
+        model.drawCard(player).ifPresent(card -> {
+            view.showDraw(player, card);
+            
+            // se la carta pescata è la briscola, togli la briscola dalla view
+            if (card.equals(model.getBriscola())) {
+                view.hideBriscola();
+            }
+            
+            // se la carta pescata è l'ultima del mazzo, avvisa la view 
+            if (model.getDeck().size() == 1) {
+                view.showLastDrawingTurn();
+            }
+        });
 
-
-    /**
-     * Gestisce la fine della partita mostrando i punteggi finali e il vincitore.
+        // se il mazzo è vuoto, togli il mazzo dalla view
+        if (model.getDeck().isEmpty()) {
+            view.hideDeck();
+        }
+    }
+    
+    /*
+     * Gestisce la fine del gioco, mostra i risultati finali e chiede se l'utente vuole 
+     * giocare di nuovo.
      */
     private void endGame() {
-        Optional<Player> winner = model.getWinner();
-        view.showFinalScores(player1, player2, player1.getPoints(), player2.getPoints());
-        view.showWinner(winner);
+        Player p1 = model.getPlayer1();
+        Player p2 = model.getPlayer2();
+        
+        view.showFinalScores(p1, p2, p1.getPoints(), p2.getPoints());
+        view.showWinner(model.getWinner());
+        
+        // Chiede se l'utente vuole giocare di nuovo. View notifica indietro tramite restartGame()
+        view.askPlayAgain();
     }
-
-
-    /**
-     * @param player
-     * @param card
+    
+    /*
+     * Gestisce la transizione a un nuovo stato di gioco.
+     * 
+     * @param newState il nuovo stato di gioco
      */
-    @Override
-    public void onCardChosen(Player player, Card card) {
-        // aggiorna model mettendo la carta nel table come prima o seconda (in base a posizione user)
-        // Se è il primo giocatore aggiunge la carta al table, fa pescare il secondo, da i risultati e va al turno successivo
-        // Se è il secondo giocatore aggiunge la carta al table, da i risultati e va al turno successivo
-        // aggiorna view facendo vedere che la carta viene giocata
+    private void transitionTo(GameState newState) {
+        currentState = newState;
+        processCurrentState();
     }
-
-//    playTurn() {
-//        fa pescare il primo e il secondo giocatore
-//                se il primo giocatore è la cpu gli fa scegliere e giocare la carta
-//                ???
-//    }
-
-    /**
-     *
+    
+    /*
+     * Crea il contesto di gioco per il giocatore specificato.
      */
-    @Override
-    public void onNextTurn() {
-        // aggiorna model andando al turno successivo (pesca oppure gioca oppure fine partita)
-        // nella view non succede nulla
-    }
-
-    /**
-     *
-     */
-    @Override
-    public void onQuit() {
-        // chiudi app
+    private GameContext createGameContext(Player player) {
+        return new GameContext(
+            player.getHand(),
+            model.getTable(),
+            model.getBriscola(),
+            model.getTable().getFirstPlayer().equals(player),
+            model.getDeck().size() == 1
+        );
     }
 }

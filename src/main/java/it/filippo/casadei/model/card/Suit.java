@@ -1,4 +1,4 @@
-package it.filippo.casadei.model;
+package it.filippo.casadei.model.card;
 
 /**
  * Rappresenta i semi delle carte nel gioco della Briscola.

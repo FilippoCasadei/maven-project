@@ -1,6 +1,11 @@
 package it.filippo.casadei.benchmark;
 
 import it.filippo.casadei.model.*;
+import it.filippo.casadei.model.card.Card;
+import it.filippo.casadei.model.player.cpu.Cpu;
+import it.filippo.casadei.model.player.cpu.GameContext;
+import it.filippo.casadei.model.player.cpu.HardDifficulty;
+import it.filippo.casadei.model.player.Player;
 
 /**
  * La classe CpuDifficultyComparator funge da strumento di simulazione per confrontare le
@@ -25,60 +30,87 @@ import it.filippo.casadei.model.*;
 public class CpuDifficultyComparator {
     /**
      * Simula una serie di partite automatizzate tra due giocatori CPU con differenti
-     * livelli di difficoltà e calcola le statistiche delle prestazioni per ogni livello.
+     * livelli di difficoltà e calcola la percentuale di partite vinte per ogni CPU e
+     * quella di pareggi.
      *
      * @param args
      */
     public static void main(String[] args) {
-        int games = 100000;
+        final int GAMES_NUM = 100000;  // numero scelto di partite da simulare
         int winsPlayer1 = 0;
         int winsPlayer2 = 0;
         int draws = 0;
 
-        for (int i = 0; i < games; i++) {
-            Cpu cpu1 = new Cpu("CPU1");
-            Cpu cpu2 = new Cpu("CPU2");
-            cpu1.setDifficulty(new MediumDifficulty());
-            cpu2.setDifficulty(new HardDifficulty());
+        for (int i = 0; i < GAMES_NUM; i++) {
+            // Creazione 2 cpu
+            Cpu cpu1 = new Cpu("CPU1", new HardDifficulty());
+            Cpu cpu2 = new Cpu("CPU2", new HardDifficulty());
 
-            Deck deck = new Deck();
-            Table table = new Table();
-            BriscolaGame game = new BriscolaGame(cpu1, cpu2, deck, table);
+            // Creazione del model
+            BriscolaGame game = new BriscolaGame(cpu1, cpu2);
 
             // ciclo di gioco automatico
             game.setupGame();
             while (!game.isGameOver()) {
+                Table table = game.getTable();
                 Player first = table.getFirstPlayer();
                 Player second = table.getSecondPlayer();
 
-                Card card1 = ((Cpu)first).chooseCard(game);
+                // Aggiorna contesto di gioco per la prima CPU a giocare
+                GameContext context1 = new GameContext(
+                    first.getHand(),
+                    table,
+                    game.getBriscola(),
+                    true, 
+                    game.getDeck().size() == 2 || game.getDeck().size() == 1  // ultimo turno di pesca 
+                );
+
+                // Primo giocatore gioca la carta
+                Card card1 = ((Cpu)first).chooseCard(context1);
                 game.playCard(first, card1);
 
-                Card card2 = ((Cpu)second).chooseCard(game);
+                // Aggiorna contesto di gioco per la seconda CPU a giocare
+                GameContext context2 = new GameContext(
+                    second.getHand(),
+                    table,
+                    game.getBriscola(),
+                    false, 
+                    game.getDeck().size() == 2 || game.getDeck().size() == 1  // ultimo turno di pesca 
+                );
+
+                // Secondo giocatore gioca la carta
+                Card card2 = ((Cpu)second).chooseCard(context2);
                 game.playCard(second, card2);
 
+                // Valuta la mano di gioco
                 game.evaluateHand();
+                
+                // Pulisce il tavolo per la mano successiva
                 table.clear();
 
+                // I giocatori pescano una carta
                 game.drawCard(table.getFirstPlayer());
                 game.drawCard(table.getSecondPlayer());
             }
 
-            // determina vincitore
+            // Determina vincitore
             int p1Points = cpu1.getPoints();
             int p2Points = cpu2.getPoints();
 
+            // Aggiorna statistiche di vittoria o pareggio
             if (p1Points > p2Points) winsPlayer1++;
             else if (p2Points > p1Points) winsPlayer2++;
             else draws++;
 
+            // Resetta il gioco per la prossima partita
             game.resetGame();
         }
 
-        System.out.println("Risultati dopo " + games + " partite:");
-        System.out.println("CPU1 vittorie: " + winsPlayer1/games + "%");
-        System.out.println("CPU2 vittorie: " + winsPlayer2/games + "%");
-        System.out.println("Pareggi: " + draws/games + "%");
+        // Stampa i risultati finali
+        System.out.println("Risultati dopo " + GAMES_NUM + " partite:");
+        System.out.println("CPU1 vittorie: " + String.format("%.2f%%", 100.0 * winsPlayer1 / GAMES_NUM));
+        System.out.println("CPU2 vittorie: " + String.format("%.2f%%", 100.0 * winsPlayer2 / GAMES_NUM));
+        System.out.println("Pareggi: " + String.format("%.2f%%", 100.0 * draws / GAMES_NUM));
     }
 
 }

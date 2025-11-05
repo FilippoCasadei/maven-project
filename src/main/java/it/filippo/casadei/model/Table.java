@@ -1,5 +1,11 @@
 package it.filippo.casadei.model;
 
+import it.filippo.casadei.model.card.Card;
+import it.filippo.casadei.model.player.Player;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Rappresenta il tavolo da gioco della Briscola.
  * Gestisce le carte giocate, i giocatori e il vincitore di ogni mano.
@@ -36,108 +42,64 @@ public class Table {
         this.firstCard = null;
         this.secondCard = null;
         this.winner = null;
-        this.pointsWon = -1;
+        this.pointsWon = 0;
     }
 
     /**
      * Elimina tutti i dati del tavolo.
      * Rimuove giocatori, carte, vincitore e punti.
      */
-    public void clearAll() {
+    public void reset() {
         this.firstPlayer = null;
         this.secondPlayer = null;
         this.firstCard = null;
         this.secondCard = null;
         this.winner = null;
-        this.pointsWon = -1;
-    }
-
-    /**
-     * Restituisce la carta giocata da un determinato giocatore.
-     *
-     * @param player il giocatore di cui si vuole sapere la carta giocata
-     * @return la carta giocata dal giocatore
-     * @throws IllegalArgumentException se il giocatore non ha giocato una carta
-     */
-    public Card getCardPlayedBy(Player player) {
-        if (player.equals(firstPlayer)) {
-            return firstCard;
-        } else if (player.equals(secondPlayer)) {
-            return secondCard;
-        } else {
-            throw new IllegalArgumentException("Il giocatore " + player + " non ha giocato una carta.");
-        }
+        this.pointsWon = 0;
     }
 
     // == GETTER E SETTER ==
 
-    /**
-     * @return il primo giocatore a giocare nel turno
-     */
     public Player getFirstPlayer() {
         return firstPlayer;
     }
 
-    /**
-     * @return il secondo giocatore a giocare nel turno
-     */
     public Player getSecondPlayer() {
         return secondPlayer;
     }
 
-    /**
-     * Imposta l'ordine dei giocatori per il turno corrente.
-     *
-     * @param firstPlayer  il primo giocatore a giocare
-     * @param secondPlayer il secondo giocatore a giocare
-     */
     public void setPlayersOrder(Player firstPlayer, Player secondPlayer) {
         this.firstPlayer = firstPlayer;
         this.secondPlayer = secondPlayer;
     }
 
-    /**
-     * @return la prima carta giocata nel turno
-     */
     public Card getFirstCard() {
         return firstCard;
     }
 
-    /**
-     * @return la seconda carta giocata nel turno
-     */
     public Card getSecondCard() {
         return secondCard;
     }
 
-    /**
-     * @return i punti vinti nella mano corrente
-     */
-    public int getPointsWon() {
-        return this.pointsWon;
+    public List<Card> getPlayedCards() {
+        List<Card> played = new ArrayList<>();
+        if (firstCard != null) {
+            played.add(firstCard);
+        }    
+        if (secondCard != null) {
+            played.add(secondCard);
+        }
+        return played;
     }
 
-    /**
-     * Imposta i punti vinti nella mano corrente.
-     *
-     * @param pointsWon i punti da assegnare
-     */
     public void setPointsWon(int pointsWon) {
         this.pointsWon = pointsWon;
     }
 
-    /**
-     * @return il giocatore che ha vinto la mano corrente
-     */
     public Player getWinner() {
         return this.winner;
     }
 
-    /**
-     * Imposta il vincitore della mano corrente.
-     *
-     * @param winner il giocatore che ha vinto la mano
-     */
     public void setWinner(Player winner) {
         this.winner = winner;
     }

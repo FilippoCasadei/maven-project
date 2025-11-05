@@ -1,4 +1,6 @@
-package it.filippo.casadei.model;
+package it.filippo.casadei.model.player;
+
+import it.filippo.casadei.model.card.Card;
 
 import java.util.ArrayList;
 import java.util.Collections;

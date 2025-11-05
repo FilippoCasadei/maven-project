@@ -1,20 +1,43 @@
 package it.filippo.casadei.view;
 
-import it.filippo.casadei.controller.BriscolaController;
-import it.filippo.casadei.model.Card;
-import it.filippo.casadei.model.Cpu;
-import it.filippo.casadei.model.Player;
+import it.filippo.casadei.model.card.Card;
+import it.filippo.casadei.model.player.Player;
 
 import java.util.Optional;
 
 
 public interface BriscolaView {
-    /**
-     * Avvia la partita.
-     *
-     * @param controller il controller che gestisce la partita
+
+    // ==  METODI DI INTERAZIONE E NOTIFICA ALL'OBSERVER ==
+
+    /*
+     * Imposta l'observer per notificare gli eventi di interazione.
      */
-    void start(BriscolaController controller);
+    void setObserver(BriscolaViewObserver observer);
+
+    /**
+     * Chiede all'utente di scegliere la difficoltà della CPU e notifica l'observer.
+     */
+    void chooseCpuDifficulty();
+
+    /**
+     * Chiede all'utente se vuole giocare di nuovo e notifica l'observer della scelta.
+     */
+    void askPlayAgain();
+
+    /**
+     * Abilita la selezione delle carte per il giocatore specificato e notifica l'observer.
+     *
+     * @param p il giocatore che può selezionare le carte
+     */
+    void enableCardSelection(Player p);
+
+    // == METODI DI AGGIORNAMENTO ==
+    
+    /**
+     * Avvia la visualizzazione della GUI.
+     */
+    void start();
 
     /**
      * Mostra la configurazione iniziale con la carta di briscola e i giocatori.
@@ -26,28 +49,6 @@ public interface BriscolaView {
     void showSetup(Card briscolaCard, Player human, Player cpu);
 
     /**
-     * Permette di scegliere la difficoltà della CPU.
-     *
-     * @param cpu la CPU di cui impostare la difficoltà
-     */
-    void chooseCpuDifficulty(Cpu cpu);
-
-    /**
-     * Mostra la carta di briscola estratta per la partita.
-     *
-     * @param briscolaCard la carta di briscola da mostrare
-     */
-    void showBriscola(Card briscolaCard);
-
-    /**
-     * Chiede all'utente di scegliere una carta dalla propria mano.
-     *
-     * @param p il giocatore che deve scegliere la carta
-     * @return la carta scelta dal giocatore
-     */
-    Card requestCard(Player p);
-
-    /**
      * Mostra la carta giocata da un giocatore.
      *
      * @param p          il giocatore che ha giocato la carta
@@ -55,13 +56,7 @@ public interface BriscolaView {
      */
     void showPlayedCard(Player p, Card playedCard);
 
-    /**
-     * Mostra il risultato della mano con il vincitore e i punti ottenuti.
-     *
-     * @param winner    il giocatore che ha vinto la mano
-     * @param pointsWon i punti ottenuti nella mano
-     */
-    void showHandResult(Player winner, int pointsWon);
+    void clearTable();
 
     /**
      * Mostra la carta pescata da un giocatore.
@@ -94,12 +89,7 @@ public interface BriscolaView {
      */
     void showWinner(Optional<Player> winner);
 
-    /**
-     * Chiede se si vuole giocare un'altra partita.
-     *
-     * @return true se si vuole giocare ancora, false altrimenti
-     */
-    boolean askPlayAgain();
+    
 
     /**
      * Nasconde la carta di briscola.
@@ -112,7 +102,9 @@ public interface BriscolaView {
     void hideDeck();
 
     /**
-     * Chiude la view.
+     * Disabilita la selezione delle carte per l'utente.
      */
-    void close();
+    void disableCardSelection();
+
+    
 }

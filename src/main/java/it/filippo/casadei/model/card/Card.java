@@ -1,4 +1,4 @@
-package it.filippo.casadei.model;
+package it.filippo.casadei.model.card;
 
 /**
  * Rappresenta una carta da gioco di Briscola, con seme e valore.
@@ -52,40 +52,18 @@ public class Card {
 
     // == GETTER E SETTER ==
 
-    /**
-     * Restituisce il punteggio della carta.
-     *
-     * @return punteggio della carta nel gioco della briscola
-     */
     public int getPoints() {
         return this.rank.getCardPoints();
     }
 
-    /**
-     * Restituisce il seme della carta.
-     *
-     * @return seme della carta
-     */
     public Suit getSuit() {
         return this.suit;
     }
 
-    /**
-     * Restituisce il valore della carta.
-     *
-     * @return valore della carta
-     */
     public Rank getRank() {
         return this.rank;
     }
 
-    // == ToSTRING ==
-
-    /**
-     * Restituisce una rappresentazione testuale della carta.
-     *
-     * @return stringa nel formato "valore di seme"
-     */
     @Override
     public String toString() {
         return this.rank.getRankName() + " di " + this.suit.getSuitName();

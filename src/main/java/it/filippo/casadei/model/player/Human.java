@@ -1,11 +1,11 @@
-package it.filippo.casadei.model;
+package it.filippo.casadei.model.player;
 
 /**
  * Rappresenta un giocatore umano nel gioco della Briscola.
  * Questa classe estende la classe astratta Player e viene utilizzata
  * per gestire le azioni di un giocatore reale durante la partita.
  */
-public class HumanPlayer extends Player {
+public class Human extends Player {
 
     // == COSTRUTTORE ==
 
@@ -14,7 +14,7 @@ public class HumanPlayer extends Player {
      *
      * @param name il nome del giocatore umano
      */
-    public HumanPlayer(String name) {
+    public Human(String name) {
         super(name);
     }
 }

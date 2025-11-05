@@ -1,5 +1,11 @@
 package it.filippo.casadei.model;
 
+import it.filippo.casadei.model.card.Card;
+import it.filippo.casadei.model.card.Suit;
+
+/**
+ * Classe che definisce metodi statici da utilizzare nel gioco.
+ */
 public class GameRules {
 
     // == METODI PUBBLICI STATICI ==

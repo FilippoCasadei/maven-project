@@ -1,5 +1,9 @@
 package it.filippo.casadei.model;
 
+import it.filippo.casadei.model.card.Card;
+import it.filippo.casadei.model.card.Rank;
+import it.filippo.casadei.model.card.Suit;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
